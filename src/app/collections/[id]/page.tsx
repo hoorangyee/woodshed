@@ -21,10 +21,13 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
 
   const lickIds = await socialRepo.collections.itemLickIds(id);
   const raw = await Promise.all(lickIds.map((lid) => licksRepo.get(lid)));
-  // 표시 가능한 릭만: 공개/링크공유 또는 내가 소유
-  const items = raw.filter(
-    (l): l is LickRecord => !!l && (l.visibility !== "private" || (!!user && l.ownerId === user.id)),
-  );
+  // 표시 가능한 릭만: (공개/링크공유) 그리고 (숨김 아님) — 단, 내가 소유한 릭은 항상 표시
+  const items = raw.filter((l): l is LickRecord => {
+    if (!l) return false;
+    const ownLick = !!user && l.ownerId === user.id;
+    if (ownLick) return true;
+    return l.visibility !== "private" && !l.hidden;
+  });
   const author = await licksRepo.getAuthorById(collection.ownerId);
   const del = deleteCollection.bind(null, id);
 
