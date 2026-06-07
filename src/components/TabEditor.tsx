@@ -71,6 +71,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   const justDragged = useRef(false);
   const [dragNote, setDragNote] = useState<{ col: number; string: number } | null>(null);
   const [dropCell, setDropCell] = useState<{ col: number; string: number } | null>(null);
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
 
   function cellAt(x: number, y: number): { col: number; string: number } | null {
     const el = (document.elementFromPoint(x, y) as HTMLElement | null)?.closest<HTMLElement>("[data-cell]");
@@ -93,6 +94,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     }
     e.preventDefault();
     setDropCell(cellAt(e.clientX, e.clientY));
+    setDragPos({ x: e.clientX, y: e.clientY });
   }
   function onCellPointerUp(e: React.PointerEvent) {
     const p = press.current;
@@ -104,9 +106,16 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         justDragged.current = false;
       }, 350);
       const target = cellAt(e.clientX, e.clientY);
-      if (target) onChange(moveNote(tab, p.col, p.string, target.col, target.string));
+      if (target) {
+        onChange(moveNote(tab, p.col, p.string, target.col, target.string));
+        // Move the active selection (and input focus) to where the note landed.
+        setActive({ col: target.col, string: target.string });
+        setBuffer("");
+        focusInput();
+      }
       setDragNote(null);
       setDropCell(null);
+      setDragPos(null);
     }
   }
 
@@ -209,6 +218,21 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         onInput={handleInput}
         defaultValue=""
       />
+
+      {/* Drag ghost — follows the cursor while dragging a note */}
+      {dragNote &&
+        dragPos &&
+        (() => {
+          const n = tab[dragNote.col]?.notes.find((x) => x.string === dragNote.string);
+          return n ? (
+            <div
+              className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-[150%] rounded bg-accent px-2 py-1 font-mono text-sm font-medium text-paper-raised shadow-lg"
+              style={{ left: dragPos.x, top: dragPos.y }}
+            >
+              {cellToken(n)}
+            </div>
+          ) : null;
+        })()}
 
       <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
         {/* String labels */}
