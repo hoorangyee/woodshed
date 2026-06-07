@@ -287,12 +287,16 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
             cells = ghostCell(n, "n", true); // keep the green focus form
           } else if (dragCol !== null && tab[dragCol]) {
             const col = tab[dragCol];
-            cells = ROWS.map((s) =>
-              ghostCell(
-                col.notes.find((x) => x.string === s),
-                s,
-                active?.col === dragCol && active?.string === s,
-              ),
+            cells = col.whiskey ? (
+              <div className="flex h-48 w-9 items-center justify-center text-2xl">🥃</div>
+            ) : (
+              ROWS.map((s) =>
+                ghostCell(
+                  col.notes.find((x) => x.string === s),
+                  s,
+                  active?.col === dragCol && active?.string === s,
+                ),
+              )
             );
             wrap = "rounded-md bg-paper-sunk";
           } else {
