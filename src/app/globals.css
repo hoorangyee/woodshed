@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
-/* ── Studio Notebook 디자인 토큰 ───────────────────────────── */
+/* ── Porcelain & Indigo 디자인 토큰 ───────────────────────────── */
 @theme {
-  --color-paper: #f3ecdd; /* 따뜻한 크림 종이 */
-  --color-paper-raised: #faf6ea; /* 카드/입력 등 살짝 떠보이는 면 */
-  --color-paper-sunk: #ece3d1; /* 눌린 면(트랙/홈) */
-  --color-ink: #2b2017; /* 본문 잉크(따뜻한 흑갈색) */
-  --color-ink-soft: #6c5f4d; /* 보조 텍스트 */
-  --color-ink-faint: #a59a82; /* 흐린 텍스트(placeholder 등) */
-  --color-rule: #ddd2bb; /* 노트 괘선 / 경계 */
-  --color-accent: #b4452f; /* 러스트 잉크 — 단일 액센트 */
-  --color-accent-ink: #98361f; /* 액센트 진한 변형(hover) */
+  --color-paper: #f4f6f9; /* 차가운 포슬린 화이트 */
+  --color-paper-raised: #ffffff; /* 카드/입력 등 깨끗하게 떠보이는 면 */
+  --color-paper-sunk: #e9edf3; /* 눌린 면(트랙/보표 홈) */
+  --color-ink: #1f2733; /* 본문 잉크(차가운 차콜) */
+  --color-ink-soft: #5b6472; /* 보조 텍스트 */
+  --color-ink-faint: #9aa3b1; /* 흐린 텍스트(placeholder 등) */
+  --color-rule: #dde2ea; /* 괘선 / 경계 */
+  --color-accent: #3b4aa3; /* 만년필 인디고 — 단일 액센트 */
+  --color-accent-ink: #2c3a86; /* 액센트 진한 변형(hover) */
 
   --font-serif: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);
@@ -25,20 +25,20 @@
 
 body {
   background-color: var(--color-paper);
-  /* 아주 옅은 종이 결: 미세한 따뜻함만 더함 */
+  /* 아주 옅은 냉색 톤: 미세한 깊이감만 더함 */
   background-image:
-    radial-gradient(circle at 15% 10%, rgba(180, 69, 47, 0.04), transparent 40%),
-    radial-gradient(circle at 85% 90%, rgba(43, 32, 23, 0.035), transparent 45%);
+    radial-gradient(circle at 12% 8%, rgba(59, 74, 163, 0.05), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(31, 39, 51, 0.035), transparent 45%);
   background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
 ::selection {
-  background: rgba(180, 69, 47, 0.18);
+  background: rgba(59, 74, 163, 0.16);
 }
 
-/* 포커스 링: 액센트 잉크 */
+/* 포커스 링: 액센트 인디고 */
 *:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
