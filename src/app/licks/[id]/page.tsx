@@ -7,12 +7,18 @@ import { InkLink, btnGhost } from "@/components/ui";
 import { deleteLick } from "../actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { currentUser } from "@/lib/auth/current-user";
 
 export default async function LickDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const t = getDictionary(await getLocale());
-  const lick = await licksRepo.get(id);
+  const [lick, user] = await Promise.all([licksRepo.get(id), currentUser()]);
   if (!lick) notFound();
+
+  const isOwner = !!user && user.id === lick.ownerId;
+  // 비공개 릭은 소유자만 열람 가능
+  if (lick.visibility === "private" && !isOwner) notFound();
+
   const del = deleteLick.bind(null, id);
 
   return (
@@ -40,12 +46,14 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
             </div>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link href={`/licks/${id}/edit`} className={btnGhost}>
-            {t.edit}
-          </Link>
-          <DeleteButton action={del} />
-        </div>
+        {isOwner && (
+          <div className="flex shrink-0 items-center gap-2">
+            <Link href={`/licks/${id}/edit`} className={btnGhost}>
+              {t.edit}
+            </Link>
+            <DeleteButton action={del} />
+          </div>
+        )}
       </div>
 
       <TabView tab={lick.tab} tuning={lick.tuning} />

@@ -8,6 +8,8 @@ import { Wordmark, btnPrimary, btnGhost, inputBase } from "@/components/ui";
 import { importLicks } from "@/app/licks/import/actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { requireUser } from "@/lib/auth/current-user";
+import { signOut } from "@/lib/auth/auth";
 
 export default async function Home({
   searchParams,
@@ -16,24 +18,53 @@ export default async function Home({
 }) {
   const { q, tag } = await searchParams;
   const t = getDictionary(await getLocale());
-  const [licks, tags] = await Promise.all([licksRepo.list({ q, tag }), licksRepo.allTags()]);
+  const user = await requireUser();
+  const [licks, tags] = await Promise.all([
+    licksRepo.list({ q, tag, ownerId: user.id }),
+    licksRepo.allTags(user.id),
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
-        <div>
+      <header className="mb-8 border-b border-rule pb-5">
+        <div className="mb-4 flex items-center justify-between gap-4">
           <Wordmark className="text-4xl" />
-          <p className="mt-1 text-sm text-ink-soft">{t.licksCount(licks.length)}</p>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <div className="flex items-center gap-2 rounded-full border border-rule bg-paper-raised py-1 pl-1 pr-1">
+              {user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.image} alt="" className="h-6 w-6 rounded-full" />
+              ) : (
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-accent text-xs text-paper-raised">
+                  {(user.handle ?? user.name ?? "?").slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <span className="px-1 text-sm text-ink-soft">@{user.handle}</span>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/login" });
+                }}
+              >
+                <button className="rounded-full px-2 py-0.5 text-xs text-ink-faint hover:text-accent">
+                  {t.signOut}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <LanguageSwitcher />
-          <a href="/api/export" className={btnGhost}>
-            {t.exportJson}
-          </a>
-          <ImportButton action={importLicks} />
-          <Link href="/licks/new" className={btnPrimary}>
-            + {t.newLick}
-          </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-ink-soft">{t.licksCount(licks.length)}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <a href="/api/export" className={btnGhost}>
+              {t.exportJson}
+            </a>
+            <ImportButton action={importLicks} />
+            <Link href="/licks/new" className={btnPrimary}>
+              + {t.newLick}
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -68,13 +99,7 @@ export default async function Home({
   );
 }
 
-function EmptyState({
-  filtered,
-  t,
-}: {
-  filtered: boolean;
-  t: ReturnType<typeof getDictionary>;
-}) {
+function EmptyState({ filtered, t }: { filtered: boolean; t: ReturnType<typeof getDictionary> }) {
   return (
     <div role="status" className="rounded-lg border border-dashed border-rule px-6 py-16 text-center">
       <p className="font-serif text-2xl text-ink">

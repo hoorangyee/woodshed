@@ -3,8 +3,10 @@ import { InkLink } from "@/components/ui";
 import { createLick } from "../actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { requireUser } from "@/lib/auth/current-user";
 
 export default async function NewLickPage() {
+  await requireUser();
   const t = getDictionary(await getLocale());
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">

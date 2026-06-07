@@ -5,6 +5,7 @@ import { TabView } from "./TabView";
 import { btnPrimary, inputBase } from "./ui";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { STANDARD_TUNING, type Column } from "@/lib/tab/types";
+import type { Visibility } from "@/lib/db/schema";
 
 const TUNINGS: Record<string, string[]> = {
   Standard: ["E", "A", "D", "G", "B", "e"],
@@ -18,6 +19,7 @@ export interface LickFormValue {
   memo: string;
   source: string;
   tags: string[];
+  visibility: Visibility;
 }
 
 interface Props {
@@ -34,6 +36,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
   const [memo, setMemo] = useState(initial?.memo ?? "");
   const [source, setSource] = useState(initial?.source ?? "");
   const [tagsText, setTagsText] = useState((initial?.tags ?? []).join(", "));
+  const [visibility, setVisibility] = useState<Visibility>(initial?.visibility ?? "private");
 
   function submit(formData: FormData) {
     const value: LickFormValue = {
@@ -42,6 +45,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
       tab,
       memo,
       source,
+      visibility,
       tags: tagsText
         .split(",")
         .map((t) => t.trim())
@@ -50,6 +54,12 @@ export function LickForm({ initial, action, submitLabel }: Props) {
     formData.set("payload", JSON.stringify(value));
     action(formData);
   }
+
+  const visOptions: { value: Visibility; label: string }[] = [
+    { value: "private", label: t.visPrivate },
+    { value: "unlisted", label: t.visUnlisted },
+    { value: "public", label: t.visPublic },
+  ];
 
   return (
     <form action={submit} className="space-y-6">
@@ -118,6 +128,21 @@ export function LickForm({ initial, action, submitLabel }: Props) {
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
         />
+      </Field>
+
+      <Field label={t.visibilityLabel} htmlFor="visibility">
+        <select
+          id="visibility"
+          className="rounded-md border border-rule bg-paper-raised px-3 py-2 text-ink focus:border-accent"
+          value={visibility}
+          onChange={(e) => setVisibility(e.target.value as Visibility)}
+        >
+          {visOptions.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
       </Field>
 
       <div className="flex justify-end border-t border-rule pt-5">

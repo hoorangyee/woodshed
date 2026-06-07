@@ -1,7 +1,7 @@
-import { and, eq, like, inArray } from "drizzle-orm";
+import { and, eq, like, inArray, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { drizzle } from "drizzle-orm/libsql";
-import { licks, tags, lickTags } from "./schema";
+import { licks, tags, lickTags, type Visibility } from "./schema";
 import type { Column } from "@/lib/tab/types";
 import { db as defaultDb } from "./client";
 
@@ -14,10 +14,12 @@ export interface LickInput {
   memo: string;
   source: string;
   tags: string[];
+  visibility: Visibility;
 }
 
 export interface LickRecord extends LickInput {
   id: string;
+  ownerId: string | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -25,6 +27,7 @@ export interface LickRecord extends LickInput {
 export interface ListFilter {
   q?: string;
   tag?: string;
+  ownerId?: string;
 }
 
 export function makeLicksRepo(db: DB) {
@@ -55,6 +58,8 @@ export function makeLicksRepo(db: DB) {
   async function rowToRecord(row: typeof licks.$inferSelect): Promise<LickRecord> {
     return {
       id: row.id,
+      ownerId: row.ownerId,
+      visibility: row.visibility as Visibility,
       title: row.title,
       tuning: JSON.parse(row.tuning),
       tab: JSON.parse(row.tab),
@@ -67,11 +72,13 @@ export function makeLicksRepo(db: DB) {
   }
 
   return {
-    async create(input: LickInput): Promise<string> {
+    async create(input: LickInput, ownerId: string): Promise<string> {
       const id = nanoid();
       const now = Date.now();
       await db.insert(licks).values({
         id,
+        ownerId,
+        visibility: input.visibility,
         title: input.title,
         tuning: JSON.stringify(input.tuning),
         tab: JSON.stringify(input.tab),
@@ -104,6 +111,7 @@ export function makeLicksRepo(db: DB) {
         if (ids.length === 0) return [];
       }
       const conditions = [];
+      if (filter.ownerId) conditions.push(eq(licks.ownerId, filter.ownerId));
       if (ids) conditions.push(inArray(licks.id, ids));
       if (filter.q) conditions.push(like(licks.title, `%${filter.q}%`));
       const rows = await db
@@ -128,6 +136,7 @@ export function makeLicksRepo(db: DB) {
       await db
         .update(licks)
         .set({
+          visibility: input.visibility,
           title: input.title,
           tuning: JSON.stringify(input.tuning),
           tab: JSON.stringify(input.tab),
@@ -147,7 +156,24 @@ export function makeLicksRepo(db: DB) {
       await db.delete(licks).where(eq(licks.id, id));
     },
 
-    async allTags(): Promise<string[]> {
+    /** 소유자 미지정 레거시 릭을 운영자 계정으로 일괄 귀속(1회성 마이그레이션). */
+    async claimOrphans(ownerId: string): Promise<number> {
+      const orphans = await db.select({ id: licks.id }).from(licks).where(isNull(licks.ownerId));
+      if (orphans.length === 0) return 0;
+      await db.update(licks).set({ ownerId }).where(isNull(licks.ownerId));
+      return orphans.length;
+    },
+
+    async allTags(ownerId?: string): Promise<string[]> {
+      if (ownerId) {
+        const rows = await db
+          .selectDistinct({ name: tags.name })
+          .from(tags)
+          .innerJoin(lickTags, eq(lickTags.tagId, tags.id))
+          .innerJoin(licks, eq(lickTags.lickId, licks.id))
+          .where(eq(licks.ownerId, ownerId));
+        return rows.map((r) => r.name);
+      }
       const rows = await db.select({ name: tags.name }).from(tags);
       return rows.map((r) => r.name);
     },

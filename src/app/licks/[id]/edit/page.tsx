@@ -5,12 +5,14 @@ import { licksRepo } from "@/lib/db/licks";
 import { updateLick } from "../../actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { requireUser } from "@/lib/auth/current-user";
 
 export default async function EditLickPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const t = getDictionary(await getLocale());
+  const user = await requireUser();
   const lick = await licksRepo.get(id);
-  if (!lick) notFound();
+  if (!lick || lick.ownerId !== user.id) notFound(); // 비소유자 편집 차단
   const action = updateLick.bind(null, id);
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">

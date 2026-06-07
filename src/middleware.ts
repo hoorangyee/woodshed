@@ -1,20 +1,27 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth/session";
+import NextAuth from "next-auth";
+import { NextResponse } from "next/server";
+import { authConfig } from "@/lib/auth/auth.config";
 
-export async function middleware(req: NextRequest) {
-  const token = req.cookies.get(SESSION_COOKIE)?.value;
-  const ok = token
-    ? await verifySessionToken(token, process.env.SESSION_SECRET ?? "")
-    : false;
-  if (!ok) {
+const { auth } = NextAuth(authConfig);
+
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isAuthed = !!req.auth;
+
+  // 개별 릭 보기(/licks/<id>)는 공개/unlisted 열람을 위해 비로그인 허용.
+  // 단, /licks/new 와 .../edit 은 편집이므로 보호.
+  const isLickView = /^\/licks\/[^/]+$/.test(pathname) && pathname !== "/licks/new";
+  const isPublic =
+    pathname.startsWith("/api/auth") || pathname.startsWith("/login") || isLickView;
+
+  if (!isAuthed && !isPublic) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
   return NextResponse.next();
-}
+});
 
 export const config = {
-  // 로그인/정적자산/_next 제외 전부 보호
-  matcher: ["/((?!login|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
