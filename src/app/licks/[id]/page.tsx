@@ -191,7 +191,7 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
                         <form action={delComment}>
                           <button
                             aria-label={t.deleteCommentAria}
-                            className="text-xs text-ink-faint transition-colors hover:text-accent"
+                            className="text-xs text-ink-faint transition-colors hover:text-danger"
                           >
                             ✕
                           </button>

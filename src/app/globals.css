@@ -11,6 +11,8 @@
   --color-rule: #dbd0b6; /* rules / borders */
   --color-accent: #2f6b4f; /* pine green — single accent */
   --color-accent-ink: #245540; /* darker accent variant (hover) */
+  --color-danger: #b23a2e; /* warm brick red — destructive actions */
+  --color-danger-ink: #8f2d23; /* darker danger variant (hover) */
 
   --font-serif: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);

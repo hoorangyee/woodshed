@@ -11,7 +11,7 @@ export function DeleteButton({ action }: { action: (formData: FormData) => void 
       <button
         type="button"
         onClick={() => setArmed(true)}
-        className="rounded-md border border-rule px-3 py-1.5 text-sm text-ink-soft transition-colors hover:border-accent hover:text-accent"
+        className="rounded-md border border-rule px-3 py-1.5 text-sm text-ink-soft transition-colors hover:border-danger hover:text-danger"
       >
         {t.del}
       </button>
@@ -21,7 +21,7 @@ export function DeleteButton({ action }: { action: (formData: FormData) => void 
   return (
     <form action={action} className="flex items-center gap-1.5">
       <span className="text-sm text-ink-soft">{t.confirmDelete}</span>
-      <button className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-paper-raised hover:bg-accent-ink">
+      <button className="rounded-md bg-danger px-3 py-1.5 text-sm font-medium text-paper-raised hover:bg-danger-ink">
         {t.del}
       </button>
       <button
