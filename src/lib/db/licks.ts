@@ -1,4 +1,4 @@
-import { and, eq, like, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { drizzle } from "drizzle-orm/libsql";
 import { licks, tags, lickTags, users, type Visibility } from "./schema";
@@ -71,7 +71,24 @@ export function makeLicksRepo(db: DB) {
     return rows.map((r) => r.name);
   }
 
-  async function rowToRecord(row: typeof licks.$inferSelect): Promise<LickRecord> {
+  /** 여러 릭의 태그를 한 번에 조회(N+1 방지). */
+  async function tagsForMany(lickIds: string[]): Promise<Map<string, string[]>> {
+    const map = new Map<string, string[]>();
+    if (lickIds.length === 0) return map;
+    const rows = await db
+      .select({ lickId: lickTags.lickId, name: tags.name })
+      .from(lickTags)
+      .innerJoin(tags, eq(lickTags.tagId, tags.id))
+      .where(inArray(lickTags.lickId, lickIds));
+    for (const r of rows) {
+      const arr = map.get(r.lickId);
+      if (arr) arr.push(r.name);
+      else map.set(r.lickId, [r.name]);
+    }
+    return map;
+  }
+
+  function mapRow(row: typeof licks.$inferSelect, tagList: string[]): LickRecord {
     return {
       id: row.id,
       ownerId: row.ownerId,
@@ -84,8 +101,21 @@ export function makeLicksRepo(db: DB) {
       source: row.source,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
-      tags: await tagsFor(row.id),
+      tags: tagList,
     };
+  }
+
+  async function rowToRecord(row: typeof licks.$inferSelect): Promise<LickRecord> {
+    return mapRow(row, await tagsFor(row.id));
+  }
+
+  /** 제목·메모·태그를 대상으로 한 키워드 매칭(대소문자 무시). */
+  function matchesQuery(r: LickRecord, q: string): boolean {
+    return (
+      r.title.toLowerCase().includes(q) ||
+      r.memo.toLowerCase().includes(q) ||
+      r.tags.some((t) => t.toLowerCase().includes(q))
+    );
   }
 
   return {
@@ -130,22 +160,15 @@ export function makeLicksRepo(db: DB) {
       const conditions = [];
       if (filter.ownerId) conditions.push(eq(licks.ownerId, filter.ownerId));
       if (ids) conditions.push(inArray(licks.id, ids));
-      if (filter.q) conditions.push(like(licks.title, `%${filter.q}%`));
       const rows = await db
         .select()
         .from(licks)
         .where(conditions.length ? and(...conditions) : undefined);
-      const records = await Promise.all(rows.map(rowToRecord));
-      // 메모/태그까지 포함한 키워드 매칭(제목 LIKE 외 보강)
+      const tagMap = await tagsForMany(rows.map((r) => r.id));
+      const records = rows.map((r) => mapRow(r, tagMap.get(r.id) ?? []));
+      // 키워드 검색은 제목·메모·태그 전체를 대상으로(JS에서 일괄 매칭)
       const q = filter.q?.toLowerCase();
-      const filtered = q
-        ? records.filter(
-            (r) =>
-              r.title.toLowerCase().includes(q) ||
-              r.memo.toLowerCase().includes(q) ||
-              r.tags.some((t) => t.toLowerCase().includes(q)),
-          )
-        : records;
+      const filtered = q ? records.filter((r) => matchesQuery(r, q)) : records;
       return filtered.sort((a, b) => b.updatedAt - a.updatedAt);
     },
 
@@ -197,7 +220,6 @@ export function makeLicksRepo(db: DB) {
       const conditions = [eq(licks.visibility, "public"), eq(licks.hidden, 0)];
       if (filter.ownerId) conditions.push(eq(licks.ownerId, filter.ownerId));
       if (ids) conditions.push(inArray(licks.id, ids));
-      if (filter.q) conditions.push(like(licks.title, `%${filter.q}%`));
       const rows = await db
         .select({
           lick: licks,
@@ -208,21 +230,13 @@ export function makeLicksRepo(db: DB) {
         .from(licks)
         .leftJoin(users, eq(users.id, licks.ownerId))
         .where(and(...conditions));
-      let records: LickWithAuthor[] = await Promise.all(
-        rows.map(async (r) => ({
-          ...(await rowToRecord(r.lick)),
-          author: { handle: r.handle, name: r.name, image: r.image },
-        })),
-      );
+      const tagMap = await tagsForMany(rows.map((r) => r.lick.id));
+      let records: LickWithAuthor[] = rows.map((r) => ({
+        ...mapRow(r.lick, tagMap.get(r.lick.id) ?? []),
+        author: { handle: r.handle, name: r.name, image: r.image },
+      }));
       const q = filter.q?.toLowerCase();
-      if (q) {
-        records = records.filter(
-          (r) =>
-            r.title.toLowerCase().includes(q) ||
-            r.memo.toLowerCase().includes(q) ||
-            r.tags.some((t) => t.toLowerCase().includes(q)),
-        );
-      }
+      if (q) records = records.filter((r) => matchesQuery(r, q));
       return records.sort((a, b) => b.createdAt - a.createdAt);
     },
 

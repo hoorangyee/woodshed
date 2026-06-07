@@ -22,6 +22,11 @@ export function LickCard({
       <div className="min-w-0">
         <h3 className="font-serif text-xl text-ink transition-colors group-hover:text-accent">
           {lick.title}
+          {lick.hidden && (
+            <span className="ml-2 rounded bg-accent/10 px-1.5 py-0.5 align-middle text-xs font-sans text-accent">
+              {t.hiddenBadge}
+            </span>
+          )}
         </h3>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-soft">
           {authorHandle && (

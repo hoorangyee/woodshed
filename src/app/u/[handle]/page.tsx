@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { licksRepo } from "@/lib/db/licks";
 import { LickCard } from "@/components/LickCard";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Wordmark, btnGhost, btnPrimary } from "@/components/ui";
+import { SiteHeader } from "@/components/SiteHeader";
+import { btnGhost, btnPrimary } from "@/components/ui";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { currentUser } from "@/lib/auth/current-user";
@@ -22,10 +22,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">
       <header className="mb-8 border-b border-rule pb-5">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <Wordmark className="text-2xl" />
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+        <div className="mb-6">
+          <SiteHeader wordmarkClassName="text-2xl">
             {user ? (
               <Link href="/" className={btnGhost}>
                 {t.myLicks}
@@ -35,7 +33,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
                 {t.signIn}
               </Link>
             )}
-          </div>
+          </SiteHeader>
         </div>
         <div className="flex items-center gap-3">
           {profile.image ? (

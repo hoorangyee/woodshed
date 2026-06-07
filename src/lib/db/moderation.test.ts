@@ -51,6 +51,13 @@ describe("reports", () => {
     expect(await mod.listReports("open")).toHaveLength(0);
     expect(await mod.listReports("resolved")).toHaveLength(1);
   });
+
+  it("detects an existing open report (dedup)", async () => {
+    const lickId = await licksRepo.create(sample, A);
+    await mod.createReport({ targetType: "lick", targetId: lickId, reporterId: B, reason: "Spam" });
+    expect(await mod.hasOpenReport(B, "lick", lickId)).toBe(true);
+    expect(await mod.hasOpenReport(A, "lick", lickId)).toBe(false);
+  });
 });
 
 describe("hiding", () => {

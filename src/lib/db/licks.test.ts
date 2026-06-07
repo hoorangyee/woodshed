@@ -59,6 +59,15 @@ describe("licks repo", () => {
     expect((await repo.list({ ownerId: A, q: "pentatonic" }))[0].title).toBe("Pentatonic run");
   });
 
+  it("keyword search matches memo and tags, not just the title", async () => {
+    await repo.create({ ...sample, title: "Untitled", memo: "bluesy turnaround", tags: [] }, A);
+    await repo.create({ ...sample, title: "Plain", memo: "", tags: ["funk"] }, A);
+    expect((await repo.list({ ownerId: A, q: "turnaround" })).map((l) => l.title)).toEqual([
+      "Untitled",
+    ]);
+    expect((await repo.list({ ownerId: A, q: "funk" })).map((l) => l.title)).toEqual(["Plain"]);
+  });
+
   it("updates a lick and replaces tags + visibility", async () => {
     const id = await repo.create(sample, A);
     await repo.update(id, { ...sample, title: "Updated", tags: ["jazz"], visibility: "public" });

@@ -1,4 +1,4 @@
-import { eq, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { drizzle } from "drizzle-orm/libsql";
 import { reports, licks, comments, users } from "./schema";
@@ -35,6 +35,27 @@ export function makeModerationRepo(db: DB) {
         status: "open",
         createdAt: Date.now(),
       });
+    },
+
+    /** 같은 사용자가 같은 대상에 이미 미처리 신고를 했는지(중복 방지). */
+    async hasOpenReport(
+      reporterId: string,
+      targetType: TargetType,
+      targetId: string,
+    ): Promise<boolean> {
+      const rows = await db
+        .select({ id: reports.id })
+        .from(reports)
+        .where(
+          and(
+            eq(reports.reporterId, reporterId),
+            eq(reports.targetType, targetType),
+            eq(reports.targetId, targetId),
+            eq(reports.status, "open"),
+          ),
+        )
+        .limit(1);
+      return rows.length > 0;
     },
 
     async listReports(status: string = "open"): Promise<ReportRow[]> {

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { licksRepo } from "@/lib/db/licks";
 import { LickCard } from "@/components/LickCard";
 import { TagFilter } from "@/components/TagFilter";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Wordmark, btnGhost, btnPrimary, inputBase } from "@/components/ui";
+import { SiteHeader } from "@/components/SiteHeader";
+import { btnGhost, btnPrimary, inputBase } from "@/components/ui";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { currentUser } from "@/lib/auth/current-user";
@@ -24,10 +24,8 @@ export default async function ExplorePage({
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">
       <header className="mb-8 border-b border-rule pb-5">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <Wordmark className="text-4xl" />
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+        <div className="mb-4">
+          <SiteHeader wordmarkClassName="text-4xl">
             {user ? (
               <Link href="/" className={btnGhost}>
                 {t.myLicks}
@@ -37,7 +35,7 @@ export default async function ExplorePage({
                 {t.signIn}
               </Link>
             )}
-          </div>
+          </SiteHeader>
         </div>
         <div>
           <h1 className="font-serif text-2xl text-ink">{t.explore}</h1>

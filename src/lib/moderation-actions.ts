@@ -17,6 +17,8 @@ export async function reportContent(
   if (!user) redirect("/login");
   const parsed = reasonSchema.safeParse(reason);
   if (!parsed.success) return false;
+  // 중복 방지: 같은 대상에 이미 미처리 신고가 있으면 멱등 처리
+  if (await moderationRepo.hasOpenReport(user.id, targetType, targetId)) return true;
   await moderationRepo.createReport({
     targetType,
     targetId,

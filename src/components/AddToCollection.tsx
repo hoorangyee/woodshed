@@ -1,8 +1,9 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { toggleInCollection } from "@/lib/social-actions";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useDismiss } from "./use-dismiss";
 
 export function AddToCollection({
   lickId,
@@ -17,6 +18,8 @@ export function AddToCollection({
   const [open, setOpen] = useState(false);
   const [contained, setContained] = useState<Set<string>>(new Set(containedIds));
   const [pending, startTransition] = useTransition();
+  const ref = useRef<HTMLDivElement>(null);
+  useDismiss(open, () => setOpen(false), ref);
 
   function toggle(cid: string) {
     const optimistic = new Set(contained);
@@ -35,7 +38,7 @@ export function AddToCollection({
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

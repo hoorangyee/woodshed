@@ -69,6 +69,7 @@ const en = {
   resolve: "Resolve",
   dismiss: "Dismiss",
   hiddenByMod: "Hidden by a moderator.",
+  hiddenBadge: "Hidden",
   licenseNote: "By sharing publicly, you confirm you have the right to share this TAB.",
 
   licksCount: (n: number) => `${n} lick${n === 1 ? "" : "s"} collected`,
@@ -199,6 +200,7 @@ const ko: Dict = {
   resolve: "처리",
   dismiss: "무시",
   hiddenByMod: "모더레이터가 숨긴 콘텐츠입니다.",
+  hiddenBadge: "숨김",
   licenseNote: "공개 시 이 TAB을 공유할 권리가 있음을 확인합니다.",
 
   licksCount: (n: number) => `모아둔 기타 릭 ${n}개`,
