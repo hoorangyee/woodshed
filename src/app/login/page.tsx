@@ -1,5 +1,5 @@
 import { signIn } from "@/lib/auth/auth";
-import { btnPrimary, btnGhost, inputBase } from "@/components/ui";
+import { btnPrimary, btnGhost, inputBase, WoodshedMark } from "@/components/ui";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -12,8 +12,8 @@ export default async function LoginPage() {
     <main className="grid min-h-screen place-items-center p-6">
       <div className="w-full max-w-xs">
         <div className="mb-6 text-center">
-          <h1 className="font-serif text-3xl tracking-tight text-ink">
-            <span className="text-accent">♪</span> Woodshed
+          <h1 className="inline-flex items-center gap-2 font-serif text-3xl tracking-tight text-ink">
+            <WoodshedMark className="text-accent" /> Woodshed
           </h1>
           <p className="mt-1 text-sm text-ink-soft">{t.appTagline}</p>
         </div>

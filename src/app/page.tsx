@@ -2,10 +2,8 @@ import Link from "next/link";
 import { licksRepo } from "@/lib/db/licks";
 import { LickCard } from "@/components/LickCard";
 import { TagFilter } from "@/components/TagFilter";
-import { ImportButton } from "@/components/ImportButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Wordmark, btnPrimary, btnGhost, inputBase } from "@/components/ui";
-import { importLicks } from "@/app/licks/import/actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { requireUser } from "@/lib/auth/current-user";
@@ -63,10 +61,6 @@ export default async function Home({
             <Link href="/collections" className={btnGhost}>
               {t.collections}
             </Link>
-            <a href="/api/export" className={btnGhost}>
-              {t.exportJson}
-            </a>
-            <ImportButton action={importLicks} />
             <Link href="/licks/new" className={btnPrimary}>
               + {t.newLick}
             </Link>

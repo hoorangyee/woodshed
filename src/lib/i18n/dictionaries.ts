@@ -57,8 +57,6 @@ const en = {
   deleteCollection: "Delete collection",
 
   licksCount: (n: number) => `${n} lick${n === 1 ? "" : "s"} collected`,
-  exportJson: "Export",
-  importJson: "Import",
   newLick: "New lick",
   searchPlaceholder: "Search title, memo, tags…",
   searchAria: "Search licks",
@@ -174,8 +172,6 @@ const ko: Dict = {
   deleteCollection: "컬렉션 삭제",
 
   licksCount: (n: number) => `모아둔 기타 릭 ${n}개`,
-  exportJson: "내보내기",
-  importJson: "가져오기",
   newLick: "새 릭",
   searchPlaceholder: "제목·메모·태그 검색…",
   searchAria: "릭 검색",

@@ -11,13 +11,34 @@ export const btnGhost =
 export const inputBase =
   "w-full rounded-md border border-rule bg-paper-raised px-3 py-2 text-ink placeholder:text-ink-faint transition-colors focus:border-accent";
 
-/** 잉크 펜 느낌의 워드마크 */
+/** Woodshed 로고 마크 — 작은 셰드 + 라운드 사운드홀(창). em 기준으로 글자 크기에 맞춰 스케일. */
+export function WoodshedMark({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+      style={{ width: "0.82em", height: "0.82em" }}
+    >
+      <path d="M3 10.5 L12 3.5 L21 10.5" />
+      <path d="M5.5 10 V20.5 H18.5 V10" />
+      <circle cx="12" cy="14.8" r="2.2" />
+    </svg>
+  );
+}
+
+/** 워드마크 */
 export function Wordmark({ as = "h1", className = "" }: { as?: "h1" | "span"; className?: string }) {
   const Tag = as;
   return (
     <Tag className={`font-serif tracking-tight text-ink ${className}`}>
-      <Link href="/" className="inline-flex items-baseline gap-1.5 no-underline">
-        <span className="text-accent">♪</span>
+      <Link href="/" className="inline-flex items-center gap-2 no-underline">
+        <WoodshedMark className="text-accent" />
         <span>Woodshed</span>
       </Link>
     </Tag>
