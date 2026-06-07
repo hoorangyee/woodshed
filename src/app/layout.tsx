@@ -22,8 +22,8 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Licks",
-  description: "기타 릭 TAB 라이브러리",
+  title: "Woodshed",
+  description: "Woodshed — a place to collect and hone guitar licks",
 };
 
 export default async function RootLayout({

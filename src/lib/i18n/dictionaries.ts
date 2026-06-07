@@ -6,7 +6,7 @@ export const defaultLocale: Locale = "en";
 const en = {
   localeLabel: { en: "EN", ko: "한국어" },
 
-  appTagline: "Guitar lick TAB notebook",
+  appTagline: "Woodshed your guitar licks",
   password: "Password",
   login: "Enter",
   loggingIn: "Checking…",
@@ -16,7 +16,7 @@ const en = {
   signInGithub: "Continue with GitHub",
   signOut: "Sign out",
   chooseHandle: "Choose your handle",
-  handleIntro: "This is your public name on Licks.",
+  handleIntro: "This is your public name on Woodshed.",
   handleHint: "3–20 chars · letters, numbers, hyphens",
   handlePlaceholder: "yourname",
   handleTaken: "That handle is already taken.",
@@ -123,7 +123,7 @@ export type Dict = typeof en;
 const ko: Dict = {
   localeLabel: { en: "EN", ko: "한국어" },
 
-  appTagline: "기타 릭 TAB 노트",
+  appTagline: "기타 릭을 갈고닦는 우드셰드",
   password: "비밀번호",
   login: "들어가기",
   loggingIn: "확인 중…",
@@ -133,7 +133,7 @@ const ko: Dict = {
   signInGithub: "GitHub로 계속",
   signOut: "로그아웃",
   chooseHandle: "핸들을 정하세요",
-  handleIntro: "Licks에서 공개적으로 쓰일 이름입니다.",
+  handleIntro: "Woodshed에서 공개적으로 쓰일 이름입니다.",
   handleHint: "3–20자 · 영문·숫자·하이픈",
   handlePlaceholder: "yourname",
   handleTaken: "이미 사용 중인 핸들입니다.",

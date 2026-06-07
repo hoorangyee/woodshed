@@ -18,7 +18,7 @@ export function Wordmark({ as = "h1", className = "" }: { as?: "h1" | "span"; cl
     <Tag className={`font-serif tracking-tight text-ink ${className}`}>
       <Link href="/" className="inline-flex items-baseline gap-1.5 no-underline">
         <span className="text-accent">♪</span>
-        <span>Licks</span>
+        <span>Woodshed</span>
       </Link>
     </Tag>
   );

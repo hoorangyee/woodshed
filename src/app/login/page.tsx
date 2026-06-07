@@ -13,7 +13,7 @@ export default async function LoginPage() {
       <div className="w-full max-w-xs">
         <div className="mb-6 text-center">
           <h1 className="font-serif text-3xl tracking-tight text-ink">
-            <span className="text-accent">♪</span> Licks
+            <span className="text-accent">♪</span> Woodshed
           </h1>
           <p className="mt-1 text-sm text-ink-soft">{t.appTagline}</p>
         </div>
