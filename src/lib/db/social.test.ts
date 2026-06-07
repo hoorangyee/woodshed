@@ -100,4 +100,12 @@ describe("collections", () => {
     expect(await repo.collections.listByOwner(A, { publicOnly: true })).toHaveLength(1);
     expect(await repo.collections.listByOwner(A)).toHaveLength(2);
   });
+
+  it("updates title and visibility", async () => {
+    const cid = await repo.collections.create(A, { title: "old", visibility: "private" });
+    await repo.collections.update(cid, { title: "renamed", visibility: "public" });
+    const c = await repo.collections.get(cid);
+    expect(c?.title).toBe("renamed");
+    expect(c?.visibility).toBe("public");
+  });
 });

@@ -71,6 +71,22 @@ export async function deleteCollection(id: string) {
   redirect("/collections");
 }
 
+/** Rename a collection and/or change its visibility (owner only). */
+export async function updateCollection(id: string, formData: FormData) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const c = await socialRepo.collections.get(id);
+  if (!c || c.ownerId !== user.id) redirect("/collections");
+  const title = titleSchema.safeParse(formData.get("title"));
+  if (!title.success) return;
+  const v = String(formData.get("visibility") ?? c.visibility);
+  const visibility = (["private", "unlisted", "public"].includes(v) ? v : c.visibility) as Visibility;
+  await socialRepo.collections.update(id, { title: title.data, visibility });
+  revalidatePath(`/collections/${id}`);
+  revalidatePath("/collections");
+  if (user.handle) revalidatePath(`/u/${user.handle}`);
+}
+
 /** Toggle a lick in/out of a collection. Returns the new membership state. */
 export async function toggleInCollection(collectionId: string, lickId: string): Promise<boolean> {
   const user = await currentUser();

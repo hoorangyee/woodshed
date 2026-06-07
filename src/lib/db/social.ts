@@ -155,6 +155,16 @@ export function makeSocialRepo(db: DB) {
         return { ...rows[0], visibility: rows[0].visibility as Visibility, itemCount: Number(count[0]?.c ?? 0) };
       },
 
+      /** Update a collection's title and/or visibility. */
+      async update(id: string, patch: { title?: string; visibility?: Visibility }): Promise<void> {
+        const set: { updatedAt: number; title?: string; visibility?: Visibility } = {
+          updatedAt: Date.now(),
+        };
+        if (patch.title !== undefined) set.title = patch.title;
+        if (patch.visibility !== undefined) set.visibility = patch.visibility;
+        await db.update(collections).set(set).where(eq(collections.id, id));
+      },
+
       async listByOwner(ownerId: string, opts?: { publicOnly?: boolean }): Promise<CollectionRecord[]> {
         const conds = [eq(collections.ownerId, ownerId)];
         if (opts?.publicOnly) conds.push(eq(collections.visibility, "public"));

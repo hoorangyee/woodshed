@@ -5,10 +5,11 @@ import { licksRepo, type LickRecord } from "@/lib/db/licks";
 import { currentUser } from "@/lib/auth/current-user";
 import { LickCard } from "@/components/LickCard";
 import { DeleteButton } from "@/components/DeleteButton";
+import { CollectionSettings } from "@/components/CollectionSettings";
 import { InkLink } from "@/components/ui";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { getLocale } from "@/lib/i18n/locale";
-import { deleteCollection, removeFromCollection } from "@/lib/social-actions";
+import { deleteCollection, removeFromCollection, updateCollection } from "@/lib/social-actions";
 
 export default async function CollectionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -38,7 +39,15 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
       </InkLink>
       <div className="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-rule pb-5">
         <div>
-          <h1 className="font-serif text-3xl text-ink">{collection.title}</h1>
+          {isOwner ? (
+            <CollectionSettings
+              title={collection.title}
+              visibility={collection.visibility}
+              action={updateCollection.bind(null, id)}
+            />
+          ) : (
+            <h1 className="font-serif text-3xl text-ink">{collection.title}</h1>
+          )}
           <p className="mt-1 text-sm text-ink-soft">
             {author?.handle && (
               <>
