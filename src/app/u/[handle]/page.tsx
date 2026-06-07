@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { licksRepo } from "@/lib/db/licks";
 import { socialRepo } from "@/lib/db/social";
 import { LickCard } from "@/components/LickCard";
+import { ProfileTabs } from "@/components/ProfileTabs";
 import { SiteHeader } from "@/components/SiteHeader";
 import { btnGhost, btnPrimary } from "@/components/ui";
 import { getLocale } from "@/lib/i18n/locale";
@@ -48,43 +49,51 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
           )}
           <div>
             <h1 className="font-serif text-2xl text-ink">@{profile.handle}</h1>
-            <p className="text-sm text-ink-soft">{t.publicCount(licks.length)}</p>
+            <p className="text-sm text-ink-soft">
+              {t.profileCounts(licks.length, collections.length)}
+            </p>
           </div>
         </div>
       </header>
 
-      {licks.length === 0 ? (
-        <div role="status" className="rounded-lg border border-dashed border-rule px-6 py-16 text-center">
-          <p className="text-sm text-ink-soft">{t.profileEmpty}</p>
-        </div>
-      ) : (
-        <ul className="divide-y divide-dotted divide-rule">
-          {licks.map((l) => (
-            <li key={l.id}>
-              <LickCard lick={l} t={t} />
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {collections.length > 0 && (
-        <section className="mt-10">
-          <h2 className="mb-2 font-serif text-xl text-ink">{t.collections}</h2>
-          <ul className="divide-y divide-dotted divide-rule">
-            {collections.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/collections/${c.id}`}
-                  className="flex items-center justify-between py-4 no-underline transition-colors hover:text-accent"
-                >
-                  <span className="font-serif text-lg text-ink">{c.title}</span>
-                  <span className="text-sm text-ink-faint">{c.itemCount}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <ProfileTabs
+        licks={
+          licks.length === 0 ? (
+            <div role="status" className="rounded-lg border border-dashed border-rule px-6 py-16 text-center">
+              <p className="text-sm text-ink-soft">{t.profileEmpty}</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-dotted divide-rule">
+              {licks.map((l) => (
+                <li key={l.id}>
+                  <LickCard lick={l} t={t} />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        collections={
+          collections.length === 0 ? (
+            <div role="status" className="rounded-lg border border-dashed border-rule px-6 py-16 text-center">
+              <p className="text-sm text-ink-soft">{t.noCollections}</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-dotted divide-rule">
+              {collections.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/collections/${c.id}`}
+                    className="flex items-center justify-between py-4 no-underline transition-colors hover:text-accent"
+                  >
+                    <span className="font-serif text-lg text-ink">{c.title}</span>
+                    <span className="text-sm text-ink-faint">{c.itemCount}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      />
     </main>
   );
 }

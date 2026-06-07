@@ -30,6 +30,9 @@ const en = {
   myLicks: "My licks",
   signIn: "Sign in",
   publicCount: (n: number) => `${n} public lick${n === 1 ? "" : "s"}`,
+  profileCounts: (l: number, c: number) =>
+    `${l} lick${l === 1 ? "" : "s"} · ${c} collection${c === 1 ? "" : "s"}`,
+  licksTab: "Licks",
   exploreEmptyTitle: "Nothing public yet",
   exploreEmptyBody: "Public licks from the community will show up here.",
   sortRecent: "Recent",
@@ -164,6 +167,8 @@ const ko: Dict = {
   myLicks: "내 릭",
   signIn: "로그인",
   publicCount: (n: number) => `공개 릭 ${n}개`,
+  profileCounts: (l: number, c: number) => `릭 ${l}개 · 컬렉션 ${c}개`,
+  licksTab: "릭",
   exploreEmptyTitle: "아직 공개된 릭이 없어요",
   exploreEmptyBody: "커뮤니티의 공개 릭이 여기에 표시됩니다.",
   sortRecent: "최신순",
