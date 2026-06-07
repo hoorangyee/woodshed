@@ -28,13 +28,25 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   const [active, setActive] = useState<{ col: number; string: number } | null>(null);
   // 직전에 누른 숫자들(두 자리 프렛 입력용 윈도). 셀 표시는 항상 실제 note 값을 따른다.
   const [buffer, setBuffer] = useState("");
-  const activeRef = useRef<HTMLButtonElement>(null);
+  // 숨겨진 입력: 칸을 탭하면 포커스를 줘서 OS 숫자 키패드를 띄운다.
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const activeNote = active
     ? tab[active.col]?.notes.find((n) => n.string === active.string)
     : undefined;
 
-  // 숫자 한 자리를 활성 음에 즉시 반영(두 자리 윈도로 10~24 지원). 키보드/패드 공용.
+  function focusInput() {
+    inputRef.current?.focus();
+  }
+
+  function selectCell(col: number, string: number) {
+    setActive({ col, string });
+    setBuffer("");
+    // 사용자 제스처(탭) 안에서 동기적으로 포커스 → 모바일 키패드 표시
+    focusInput();
+  }
+
+  // 숫자 한 자리를 활성 음에 즉시 반영(두 자리 윈도로 10~24 지원). 키보드/키패드 공용.
   function commitDigit(col: number, string: number, digit: string) {
     const nextBuf = (buffer + digit).slice(-2);
     const fret = Math.min(24, parseInt(nextBuf, 10));
@@ -43,12 +55,14 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     onChange(setNote(tab, col, { string, fret, artic: existing?.artic }));
   }
 
-  function handleKey(e: React.KeyboardEvent, col: number, string: number) {
+  // 물리 키보드(데스크톱): 숫자/주법/삭제 처리
+  function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!active) return;
+    const { col, string } = active;
     if (/^[0-9]$/.test(e.key)) {
       e.preventDefault();
       commitDigit(col, string, e.key);
     } else if (e.key === "Enter" || e.key === " ") {
-      // 입력 확정: 다음 숫자는 새 프렛으로 시작
       e.preventDefault();
       setBuffer("");
     } else if (e.key === "Backspace" || e.key === "Delete") {
@@ -56,7 +70,6 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
       onChange(clearNote(tab, col, string));
       setBuffer("");
     } else if (e.key === "b") {
-      // 벤딩: 풀 → 하프 → 해제 순환
       e.preventDefault();
       onChange(cycleBend(tab, col, string));
     } else if (TOGGLE_KEYS.includes(e.key as Articulation)) {
@@ -65,21 +78,59 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     }
   }
 
+  // 모바일 소프트 키패드: keydown이 불안정하므로 입력 이벤트로 숫자/삭제를 잡는다.
+  function handleInput(e: React.FormEvent<HTMLInputElement>) {
+    const el = e.currentTarget;
+    if (!active) {
+      el.value = "";
+      return;
+    }
+    const ne = e.nativeEvent as InputEvent;
+    if (ne.inputType && ne.inputType.startsWith("delete")) {
+      onChange(clearNote(tab, active.col, active.string));
+      setBuffer("");
+      el.value = "";
+      return;
+    }
+    const src = ne.data ?? el.value;
+    const digits = src.match(/\d/g);
+    if (digits && digits.length) {
+      commitDigit(active.col, active.string, digits[digits.length - 1]);
+    }
+    el.value = "";
+  }
+
   // 툴바: 활성 음에 주법 토글
   function applyArtic(artic: Articulation) {
     if (!active || !activeNote) return;
     onChange(toggleArtic(tab, active.col, active.string, artic));
-    activeRef.current?.focus();
+    focusInput();
   }
 
-  function clearArtic() {
-    if (!active || !activeNote?.artic) return;
-    onChange(setNote(tab, active.col, { string: active.string, fret: activeNote.fret }));
-    activeRef.current?.focus();
+  function clearActiveNote() {
+    if (!active || !activeNote) return;
+    onChange(clearNote(tab, active.col, active.string));
+    setBuffer("");
+    focusInput();
   }
 
   return (
     <div className="space-y-3">
+      {/* OS 숫자 키패드를 띄우기 위한 숨김 입력 (fontSize 16 → iOS 줌 방지) */}
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="numeric"
+        aria-label="프렛 숫자 입력"
+        tabIndex={-1}
+        autoComplete="off"
+        className="sr-only"
+        style={{ fontSize: 16 }}
+        onKeyDown={handleKey}
+        onInput={handleInput}
+        defaultValue=""
+      />
+
       <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
         {/* 줄 라벨 */}
         <div className="flex flex-col pr-1 text-sm font-medium text-ink-soft">
@@ -98,15 +149,9 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
               return (
                 <button
                   key={s}
-                  ref={isActive ? activeRef : undefined}
                   type="button"
                   aria-label={`string-${s}-col-${c}`}
-                  onClick={() => {
-                    setActive({ col: c, string: s });
-                    setBuffer("");
-                  }}
-                  onKeyDown={(e) => handleKey(e, c, s)}
-                  onBlur={() => setBuffer("")}
+                  onClick={() => selectCell(c, s)}
                   className={`relative flex h-8 w-9 items-center justify-center text-sm tabular-nums transition-colors ${
                     isActive
                       ? "rounded bg-accent font-medium text-paper-raised"
@@ -148,46 +193,6 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         </button>
       </div>
 
-      {/* 숫자 패드 (모바일에서도 프렛 입력 가능) */}
-      <div className="rounded-lg border border-rule bg-paper-raised p-2">
-        <div className="mb-1.5 flex items-center gap-2 px-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">프렛</span>
-          <span className="text-xs text-ink-faint">
-            {active ? "숫자를 눌러 입력 (두 번 누르면 두 자리, 최대 24)" : "칸을 선택하세요"}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {Array.from({ length: 10 }, (_, d) => (
-            <button
-              key={d}
-              type="button"
-              aria-label={`프렛 ${d}`}
-              disabled={!active}
-              onClick={() => {
-                if (active) commitDigit(active.col, active.string, String(d));
-              }}
-              className="h-10 min-w-10 rounded-md border border-rule bg-paper-raised px-3 text-base font-medium tabular-nums text-ink transition-colors hover:border-ink-soft active:bg-paper-sunk disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {d}
-            </button>
-          ))}
-          <button
-            type="button"
-            aria-label="음 지우기"
-            disabled={!activeNote}
-            onClick={() => {
-              if (active) {
-                onChange(clearNote(tab, active.col, active.string));
-                setBuffer("");
-              }
-            }}
-            className="h-10 min-w-10 rounded-md border border-rule bg-paper-raised px-3 text-lg text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            ⌫
-          </button>
-        </div>
-      </div>
-
       {/* 주법 툴바 */}
       <div className="rounded-lg border border-rule bg-paper-raised p-2">
         <div className="mb-1.5 flex items-center gap-2 px-1">
@@ -222,20 +227,20 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
           })}
           <button
             type="button"
-            aria-label="주법 지우기"
-            disabled={!activeNote?.artic}
-            onClick={clearArtic}
-            className="flex min-w-[3.75rem] flex-col items-center gap-0.5 rounded-md border border-rule bg-paper-raised px-2 py-1.5 text-[11px] text-ink-soft transition-colors hover:border-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="음 지우기"
+            disabled={!activeNote}
+            onClick={clearActiveNote}
+            className="flex min-w-[3.75rem] flex-col items-center gap-0.5 rounded-md border border-rule bg-paper-raised px-2 py-1.5 text-[11px] text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span className="font-mono text-base leading-none">⌫</span>
-            <span>주법 지우기</span>
+            <span>음 지우기</span>
           </button>
         </div>
       </div>
 
       <p className="text-xs text-ink-faint">
-        팁: 칸을 선택한 뒤 위 숫자 패드(또는 키보드 숫자)로 프렛을, 주법 버튼(또는 단축키{" "}
-        <span className="font-mono">h p / \ b ~</span>)으로 주법을 입력하세요.
+        팁: 칸을 탭하면 숫자 키패드가 떠요. 두 자리는 숫자를 이어서 누르세요(최대 24). 주법은 위 버튼{" "}
+        또는 단축키(<span className="font-mono">h p / \ b ~</span>)로 입력합니다.
       </p>
     </div>
   );

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { TabEditor } from "./TabEditor";
@@ -69,15 +69,23 @@ describe("TabEditor", () => {
     expect(screen.getByRole("button", { name: "풀 벤딩" })).toBeDisabled();
   });
 
-  it("enters a fret via the on-screen number pad (touch-friendly)", async () => {
+  it("focuses the hidden numeric input when a cell is tapped (mobile keypad)", async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    // 칸 선택 전에는 숫자 패드 비활성
-    expect(screen.getByRole("button", { name: "프렛 7" })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "string-2-col-0" }));
+    const input = screen.getByLabelText("프렛 숫자 입력");
+    expect(input).toHaveFocus();
+    expect(input).toHaveAttribute("inputmode", "numeric");
+  });
+
+  it("applies a digit from a soft-keyboard input event", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
     const cell = screen.getByRole("button", { name: "string-2-col-0" });
-    await user.click(screen.getByRole("button", { name: "프렛 1" }));
-    await user.click(screen.getByRole("button", { name: "프렛 2" }));
-    expect(cell).toHaveTextContent("12");
+    await user.click(cell);
+    const input = screen.getByLabelText("프렛 숫자 입력") as HTMLInputElement;
+    // 모바일 소프트 키패드는 input 이벤트로 들어온다
+    fireEvent.input(input, { target: { value: "9" } });
+    expect(cell).toHaveTextContent("9");
   });
 });
