@@ -43,6 +43,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     e.currentTarget.setPointerCapture(e.pointerId);
     setDragCol(c);
     setDropTarget(c);
+    setDragPos({ x: e.clientX, y: e.clientY });
   }
   function onGripMove(e: React.PointerEvent) {
     if (dragCol === null) return;
@@ -56,14 +57,28 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
       }
     }
     setDropTarget(ins);
+    setDragPos({ x: e.clientX, y: e.clientY });
   }
   function onGripUp() {
     if (dragCol !== null && dropTarget !== null) {
       const to = dropTarget > dragCol ? dropTarget - 1 : dropTarget;
-      if (to !== dragCol) onChange(moveColumn(tab, dragCol, to));
+      if (to !== dragCol) {
+        onChange(moveColumn(tab, dragCol, to));
+        // Keep the active cell on its note as the columns reorder, and follow focus.
+        if (active) {
+          const ac = active.col;
+          let nc = ac;
+          if (ac === dragCol) nc = to;
+          else if (dragCol < to && ac > dragCol && ac <= to) nc = ac - 1;
+          else if (to < dragCol && ac >= to && ac < dragCol) nc = ac + 1;
+          setActive({ col: nc, string: active.string });
+          focusInput();
+        }
+      }
     }
     setDragCol(null);
     setDropTarget(null);
+    setDragPos(null);
   }
 
   // Drag a single note (fret + articulation) onto another cell.
@@ -219,19 +234,38 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         defaultValue=""
       />
 
-      {/* Drag ghost — follows the cursor while dragging a note */}
-      {dragNote &&
-        dragPos &&
+      {/* Drag ghost — follows the cursor, centered on the grab point */}
+      {dragPos &&
         (() => {
-          const n = tab[dragNote.col]?.notes.find((x) => x.string === dragNote.string);
-          return n ? (
-            <div
-              className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-[150%] rounded bg-accent px-2 py-1 font-mono text-sm font-medium text-paper-raised shadow-lg"
-              style={{ left: dragPos.x, top: dragPos.y }}
-            >
-              {cellToken(n)}
-            </div>
-          ) : null;
+          const base =
+            "pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded bg-accent font-mono font-medium text-paper-raised shadow-lg";
+          if (dragNote) {
+            const n = tab[dragNote.col]?.notes.find((x) => x.string === dragNote.string);
+            return n ? (
+              <div className={`${base} px-2 py-1 text-sm`} style={{ left: dragPos.x, top: dragPos.y }}>
+                {cellToken(n)}
+              </div>
+            ) : null;
+          }
+          if (dragCol !== null && tab[dragCol]) {
+            const col = tab[dragCol];
+            return (
+              <div
+                className={`${base} flex flex-col px-1.5 py-1 text-xs`}
+                style={{ left: dragPos.x, top: dragPos.y }}
+              >
+                {ROWS.map((s) => {
+                  const n = col.notes.find((x) => x.string === s);
+                  return (
+                    <span key={s} className="flex h-4 w-7 items-center justify-center leading-none">
+                      {n ? cellToken(n) : <span className="opacity-40">·</span>}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          }
+          return null;
         })()}
 
       <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
