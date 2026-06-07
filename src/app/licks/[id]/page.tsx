@@ -103,7 +103,7 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
             </div>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <LikeButton lickId={id} initialLiked={liked} initialCount={likeCount} canLike={!!user} />
           {user && (
             <AddToCollection

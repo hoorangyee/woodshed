@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { addColumn, removeColumn, setNote, clearNote, toggleArtic, cycleBend } from "./editor-ops";
+import { addColumn, removeColumn, moveColumn, setNote, clearNote, toggleArtic, cycleBend } from "./editor-ops";
 import type { Column } from "./types";
 
 const base: Column[] = [{ notes: [] }];
@@ -13,6 +13,23 @@ describe("addColumn / removeColumn", () => {
     const two: Column[] = [{ notes: [{ string: 0, fret: 1 }] }, { notes: [] }];
     expect(removeColumn(two, 0)).toHaveLength(1);
     expect(removeColumn(two, 0)[0].notes).toEqual([]);
+  });
+});
+
+describe("moveColumn", () => {
+  const cols = (...frets: number[]): Column[] => frets.map((f) => ({ notes: [{ string: 0, fret: f }] }));
+  it("moves a column to a new position", () => {
+    const r = moveColumn(cols(1, 2, 3), 0, 2);
+    expect(r.map((c) => c.notes[0].fret)).toEqual([2, 3, 1]);
+  });
+  it("moves backwards", () => {
+    const r = moveColumn(cols(1, 2, 3), 2, 0);
+    expect(r.map((c) => c.notes[0].fret)).toEqual([3, 1, 2]);
+  });
+  it("is a no-op for equal or out-of-range indices", () => {
+    const c = cols(1, 2, 3);
+    expect(moveColumn(c, 1, 1)).toBe(c);
+    expect(moveColumn(c, 0, 9)).toBe(c);
   });
 });
 

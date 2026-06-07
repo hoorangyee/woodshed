@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { STRING_COUNT, TOGGLE_KEYS, type Column, type Articulation } from "@/lib/tab/types";
-import { addColumn, removeColumn, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
+import { addColumn, removeColumn, moveColumn, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Dict } from "@/lib/i18n/dictionaries";
@@ -33,6 +33,38 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   const [buffer, setBuffer] = useState("");
   // Hidden input: focusing it on a cell tap brings up the OS numeric keypad.
   const inputRef = useRef<HTMLInputElement>(null);
+  // Drag-and-drop column reorder (pointer-based → works on mouse and touch).
+  const colEls = useRef<(HTMLDivElement | null)[]>([]);
+  const [dragCol, setDragCol] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<number | null>(null);
+
+  function onGripDown(e: React.PointerEvent, c: number) {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragCol(c);
+    setDropTarget(c);
+  }
+  function onGripMove(e: React.PointerEvent) {
+    if (dragCol === null) return;
+    const x = e.clientX;
+    let ins = tab.length;
+    for (let i = 0; i < tab.length; i++) {
+      const r = colEls.current[i]?.getBoundingClientRect();
+      if (r && x < r.left + r.width / 2) {
+        ins = i;
+        break;
+      }
+    }
+    setDropTarget(ins);
+  }
+  function onGripUp() {
+    if (dragCol !== null && dropTarget !== null) {
+      const to = dropTarget > dragCol ? dropTarget - 1 : dropTarget;
+      if (to !== dragCol) onChange(moveColumn(tab, dragCol, to));
+    }
+    setDragCol(null);
+    setDropTarget(null);
+  }
 
   const activeNote = active
     ? tab[active.col]?.notes.find((n) => n.string === active.string)
@@ -145,7 +177,26 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         </div>
 
         {tab.map((col, c) => (
-          <div key={c} className="flex flex-col">
+          <div
+            key={c}
+            ref={(el) => {
+              colEls.current[c] = el;
+            }}
+            className={`flex flex-col border-l-2 transition-opacity ${
+              dragCol !== null && dropTarget === c ? "border-accent" : "border-transparent"
+            } ${dragCol === c ? "opacity-40" : ""}`}
+          >
+            <button
+              type="button"
+              aria-label={t.dragColumn}
+              onPointerDown={(e) => onGripDown(e, c)}
+              onPointerMove={onGripMove}
+              onPointerUp={onGripUp}
+              onPointerCancel={onGripUp}
+              className="flex h-4 cursor-grab touch-none items-center justify-center text-xs leading-none text-ink-faint transition-colors hover:text-accent active:cursor-grabbing"
+            >
+              ⠿
+            </button>
             {ROWS.map((s) => {
               const note = col.notes.find((n) => n.string === s);
               const isActive = active?.col === c && active?.string === s;

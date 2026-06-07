@@ -56,6 +56,9 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
   const staffH = STRING_COUNT * ROW_H;
   const totalH = HEAD + staffH;
   const staffW = cols.length * COL_W;
+  // Extra room on the right so the last note's bend arrow + "full"/"½" label isn't clipped.
+  const RIGHT = compact ? 14 : 28;
+  const bodyW = staffW + RIGHT;
 
   const rowIndex = (s: number) => STRING_COUNT - 1 - s;
   const y = (s: number) => HEAD + rowIndex(s) * ROW_H + ROW_H / 2;
@@ -151,10 +154,10 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
       )}
 
       {/* Staff body */}
-      <div className="relative" style={{ width: staffW, height: totalH }}>
+      <div className="relative" style={{ width: bodyW, height: totalH }}>
         <svg
           className="absolute inset-0"
-          width={staffW}
+          width={bodyW}
           height={totalH}
           aria-hidden="true"
           style={{ overflow: "visible" }}
@@ -164,7 +167,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
             <line
               key={s}
               x1={0}
-              x2={staffW}
+              x2={bodyW}
               y1={y(s)}
               y2={y(s)}
               stroke="var(--color-rule)"

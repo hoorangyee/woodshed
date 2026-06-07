@@ -8,6 +8,15 @@ export function removeColumn(cols: Column[], index: number): Column[] {
   return cols.filter((_, i) => i !== index);
 }
 
+/** Move the column at `from` to position `to` (drag-and-drop reorder). */
+export function moveColumn(cols: Column[], from: number, to: number): Column[] {
+  if (from === to || from < 0 || to < 0 || from >= cols.length || to >= cols.length) return cols;
+  const next = [...cols];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
+
 export function setNote(cols: Column[], colIndex: number, note: Note): Column[] {
   return cols.map((col, i) => {
     if (i !== colIndex) return col;

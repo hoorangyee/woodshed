@@ -150,6 +150,7 @@ const en = {
   fretInputAria: "Fret number input",
   addColumn: "Add column",
   deleteColumn: (c: number) => `Delete column ${c + 1}`,
+  dragColumn: "Drag to reorder",
   editorTip:
     "Tip: tap a cell to open the number pad — press digits in a row for two-digit frets (max 24). Add articulations with the buttons above or keys (h p / \\ b ~).",
 };
@@ -302,6 +303,7 @@ const ko: Dict = {
   fretInputAria: "프렛 숫자 입력",
   addColumn: "칸 추가",
   deleteColumn: (c: number) => `칸 삭제 ${c + 1}`,
+  dragColumn: "드래그하여 순서 변경",
   editorTip:
     "팁: 칸을 탭하면 숫자 키패드가 떠요. 두 자리는 숫자를 이어서 누르세요(최대 24). 주법은 위 버튼 또는 단축키(h p / \\ b ~)로 입력합니다.",
 };
