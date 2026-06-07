@@ -8,12 +8,13 @@ import { CopyLink } from "@/components/CopyLink";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm } from "@/components/CommentForm";
 import { AddToCollection } from "@/components/AddToCollection";
+import { ReportButton } from "@/components/ReportButton";
 import { InkLink, btnGhost } from "@/components/ui";
 import { deleteLick } from "../actions";
 import { deleteComment } from "@/lib/social-actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
-import { currentUser } from "@/lib/auth/current-user";
+import { currentUser, isAdmin } from "@/lib/auth/current-user";
 
 export default async function LickDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,8 +23,11 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
   if (!lick) notFound();
 
   const isOwner = !!user && user.id === lick.ownerId;
+  const admin = isAdmin(user);
   // 비공개 릭은 소유자만 열람 가능
   if (lick.visibility === "private" && !isOwner) notFound();
+  // 모더레이터가 숨긴 릭은 소유자·관리자만 열람
+  if (lick.hidden && !isOwner && !admin) notFound();
 
   const [author, likeCount, liked, comments] = await Promise.all([
     lick.ownerId ? licksRepo.getAuthorById(lick.ownerId) : Promise.resolve(null),
@@ -83,6 +87,7 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
             />
           )}
           {shareable && <CopyLink />}
+          {user && !isOwner && <ReportButton targetType="lick" targetId={id} />}
           {isOwner && (
             <>
               <Link href={`/licks/${id}/edit`} className={btnGhost}>
@@ -93,6 +98,12 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
           )}
         </div>
       </div>
+
+      {lick.hidden ? (
+        <p className="mb-4 rounded-md border border-accent/40 bg-accent/10 px-3 py-2 text-sm text-accent">
+          {t.hiddenByMod}
+        </p>
+      ) : null}
 
       <TabView tab={lick.tab} tuning={lick.tuning} />
 
@@ -148,16 +159,21 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
                         {new Date(c.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    {canDelete && (
-                      <form action={delComment}>
-                        <button
-                          aria-label={t.deleteCommentAria}
-                          className="text-xs text-ink-faint transition-colors hover:text-accent"
-                        >
-                          ✕
-                        </button>
-                      </form>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {user && c.userId !== user.id && (
+                        <ReportButton targetType="comment" targetId={c.id} variant="link" />
+                      )}
+                      {canDelete && (
+                        <form action={delComment}>
+                          <button
+                            aria-label={t.deleteCommentAria}
+                            className="text-xs text-ink-faint transition-colors hover:text-accent"
+                          >
+                            ✕
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   </div>
                   <p className="mt-1 whitespace-pre-wrap text-ink">{c.body}</p>
                 </li>

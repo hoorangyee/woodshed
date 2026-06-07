@@ -12,6 +12,7 @@ export const users = sqliteTable("user", {
   image: text("image"),
   // 커뮤니티용 고유 핸들(프로필 URL·작성자 표기). 최초 로그인 후 온보딩에서 설정.
   handle: text("handle").unique(),
+  role: text("role").notNull().default("user"), // user | admin
   createdAt: integer("created_at"),
 });
 
@@ -62,6 +63,7 @@ export const licks = sqliteTable(
     ownerId: text("owner_id").references(() => users.id, { onDelete: "cascade" }),
     // 공개 범위. 기본 private(의도치 않은 공개 방지).
     visibility: text("visibility").notNull().default("private"),
+    hidden: integer("hidden").notNull().default(0), // 모더레이터 숨김(0/1)
     title: text("title").notNull(),
     tuning: text("tuning").notNull(), // JSON string[]
     tab: text("tab").notNull(), // JSON Column[]
@@ -117,9 +119,26 @@ export const comments = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     body: text("body").notNull(),
+    hidden: integer("hidden").notNull().default(0), // 모더레이터 숨김(0/1)
     createdAt: integer("created_at").notNull(),
   },
   (t) => [index("comments_lick_idx").on(t.lickId)],
+);
+
+export const reports = sqliteTable(
+  "reports",
+  {
+    id: text("id").primaryKey(),
+    targetType: text("target_type").notNull(), // "lick" | "comment"
+    targetId: text("target_id").notNull(),
+    reporterId: text("reporter_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),
+    status: text("status").notNull().default("open"), // open | resolved | dismissed
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("reports_status_idx").on(t.status)],
 );
 
 export const collections = sqliteTable(

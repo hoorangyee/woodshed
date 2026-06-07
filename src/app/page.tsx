@@ -6,7 +6,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Wordmark, btnPrimary, btnGhost, inputBase } from "@/components/ui";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
-import { requireUser } from "@/lib/auth/current-user";
+import { requireUser, isAdmin } from "@/lib/auth/current-user";
 import { signOut } from "@/lib/auth/auth";
 
 export default async function Home({
@@ -61,6 +61,11 @@ export default async function Home({
             <Link href="/collections" className={btnGhost}>
               {t.collections}
             </Link>
+            {isAdmin(user) && (
+              <Link href="/admin" className={btnGhost}>
+                {t.admin}
+              </Link>
+            )}
             <Link href="/licks/new" className={btnPrimary}>
               + {t.newLick}
             </Link>

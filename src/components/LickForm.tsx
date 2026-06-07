@@ -143,6 +143,9 @@ export function LickForm({ initial, action, submitLabel }: Props) {
             </option>
           ))}
         </select>
+        {visibility !== "private" && (
+          <p className="mt-1.5 text-xs text-ink-faint">{t.licenseNote}</p>
+        )}
       </Field>
 
       <div className="flex justify-end border-t border-rule pt-5">

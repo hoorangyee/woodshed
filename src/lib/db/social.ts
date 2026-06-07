@@ -1,4 +1,4 @@
-import { and, eq, asc, desc, inArray, sql } from "drizzle-orm";
+import { and, eq, asc, desc, gt, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { drizzle } from "drizzle-orm/libsql";
 import { likes, comments, collections, collectionItems, users } from "./schema";
@@ -86,7 +86,7 @@ export function makeSocialRepo(db: DB) {
           })
           .from(comments)
           .leftJoin(users, eq(users.id, comments.userId))
-          .where(eq(comments.lickId, lickId))
+          .where(and(eq(comments.lickId, lickId), eq(comments.hidden, 0)))
           .orderBy(asc(comments.createdAt));
         return rows;
       },
@@ -94,6 +94,14 @@ export function makeSocialRepo(db: DB) {
         const id = nanoid();
         await db.insert(comments).values({ id, lickId, userId, body, createdAt: Date.now() });
         return id;
+      },
+      /** 레이트리밋용: sinceMs 이후 해당 사용자의 댓글 수. */
+      async recentCountByUser(userId: string, sinceMs: number): Promise<number> {
+        const rows = await db
+          .select({ c: sql<number>`count(*)` })
+          .from(comments)
+          .where(and(eq(comments.userId, userId), gt(comments.createdAt, sinceMs)));
+        return Number(rows[0]?.c ?? 0);
       },
       async get(id: string): Promise<{ id: string; lickId: string; userId: string } | null> {
         const rows = await db

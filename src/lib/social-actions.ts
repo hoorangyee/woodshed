@@ -20,11 +20,17 @@ export async function toggleLike(lickId: string): Promise<{ liked: boolean; coun
 /* ── 댓글 ───────────────────────────────────────────────── */
 const commentSchema = z.string().trim().min(1).max(1000);
 
+const COMMENT_RATE_LIMIT = 5; // 분당 최대 댓글 수
+const COMMENT_WINDOW_MS = 60_000;
+
 export async function addComment(lickId: string, formData: FormData) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const parsed = commentSchema.safeParse(formData.get("body"));
   if (!parsed.success) return;
+  // 레이트리밋: 1분에 5개 초과면 무시
+  const recent = await socialRepo.comments.recentCountByUser(user.id, Date.now() - COMMENT_WINDOW_MS);
+  if (recent >= COMMENT_RATE_LIMIT) return;
   await socialRepo.comments.add(lickId, user.id, parsed.data);
   revalidatePath(`/licks/${lickId}`);
 }

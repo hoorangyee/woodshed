@@ -20,6 +20,7 @@ export interface LickInput {
 export interface LickRecord extends LickInput {
   id: string;
   ownerId: string | null;
+  hidden: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -74,6 +75,7 @@ export function makeLicksRepo(db: DB) {
     return {
       id: row.id,
       ownerId: row.ownerId,
+      hidden: !!row.hidden,
       visibility: row.visibility as Visibility,
       title: row.title,
       tuning: JSON.parse(row.tuning),
@@ -192,7 +194,7 @@ export function makeLicksRepo(db: DB) {
         ids = links.map((l) => l.lickId);
         if (ids.length === 0) return [];
       }
-      const conditions = [eq(licks.visibility, "public")];
+      const conditions = [eq(licks.visibility, "public"), eq(licks.hidden, 0)];
       if (filter.ownerId) conditions.push(eq(licks.ownerId, filter.ownerId));
       if (ids) conditions.push(inArray(licks.id, ids));
       if (filter.q) conditions.push(like(licks.title, `%${filter.q}%`));
