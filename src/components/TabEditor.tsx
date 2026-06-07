@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { STRING_COUNT, TOGGLE_KEYS, type Column, type Articulation } from "@/lib/tab/types";
+import { STRING_COUNT, TOGGLE_KEYS, type Column, type Note, type Articulation } from "@/lib/tab/types";
 import { addColumn, removeColumn, moveColumn, moveNote, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -234,43 +234,46 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         defaultValue=""
       />
 
-      {/* Drag ghost — follows the cursor, centered on the grab point */}
+      {/* Drag ghost — a lifted replica of the dragged cell/column, centered on the grab point */}
       {dragPos &&
         (() => {
-          const base =
-            "pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded bg-accent font-mono font-medium text-paper-raised shadow-lg";
+          const ghostCell = (n: Note | undefined, key: React.Key) => (
+            <span
+              key={key}
+              className="relative flex h-8 w-9 items-center justify-center text-sm tabular-nums text-ink"
+            >
+              <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-rule" />
+              <span className="relative z-10">
+                {n ? cellToken(n) : <span className="text-transparent">·</span>}
+              </span>
+            </span>
+          );
+          let cells: React.ReactNode = null;
           if (dragNote) {
             const n = tab[dragNote.col]?.notes.find((x) => x.string === dragNote.string);
-            return n ? (
-              <div className={`${base} px-2 py-1 text-sm`} style={{ left: dragPos.x, top: dragPos.y }}>
-                {cellToken(n)}
-              </div>
-            ) : null;
-          }
-          if (dragCol !== null && tab[dragCol]) {
+            if (!n) return null;
+            cells = ghostCell(n, "n");
+          } else if (dragCol !== null && tab[dragCol]) {
             const col = tab[dragCol];
-            return (
-              <div
-                className={`${base} flex flex-col px-1.5 py-1 text-xs`}
-                style={{ left: dragPos.x, top: dragPos.y }}
-              >
-                {ROWS.map((s) => {
-                  const n = col.notes.find((x) => x.string === s);
-                  return (
-                    <span key={s} className="flex h-4 w-7 items-center justify-center leading-none">
-                      {n ? cellToken(n) : <span className="opacity-40">·</span>}
-                    </span>
-                  );
-                })}
-              </div>
-            );
+            cells = ROWS.map((s) => ghostCell(col.notes.find((x) => x.string === s), s));
+          } else {
+            return null;
           }
-          return null;
+          return (
+            <div
+              className="pointer-events-none fixed z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-rule bg-paper-sunk p-1 font-mono shadow-lg"
+              style={{ left: dragPos.x, top: dragPos.y }}
+            >
+              {cells}
+            </div>
+          );
         })()}
 
       <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
         {/* String labels */}
         <div className="flex flex-col pr-1 text-sm font-medium text-ink-soft">
+          {/* spacer matching each column's drag handle so labels line up with the string lines */}
+          <span aria-hidden className="h-4" />
           {ROWS.map((s) => (
             <span key={s} className="flex h-8 items-center">
               {tuning[s]}
