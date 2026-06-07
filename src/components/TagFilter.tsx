@@ -1,7 +1,9 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export function TagFilter({ tags }: { tags: string[] }) {
+  const { t } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const active = params.get("tag");
@@ -16,13 +18,13 @@ export function TagFilter({ tags }: { tags: string[] }) {
 
   const chip = "rounded-full px-3 py-1 text-sm transition-colors";
   return (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="태그 필터">
+    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t.tagFilterAria}>
       <button
         onClick={() => pick(null)}
         aria-pressed={!active}
         className={`${chip} ${!active ? "bg-accent text-paper-raised" : "text-ink-soft hover:bg-paper-raised hover:text-ink"}`}
       >
-        전체
+        {t.all}
       </button>
       {tags.map((t) => {
         const on = active === t;

@@ -3,8 +3,11 @@ import { licksRepo } from "@/lib/db/licks";
 import { LickCard } from "@/components/LickCard";
 import { TagFilter } from "@/components/TagFilter";
 import { ImportButton } from "@/components/ImportButton";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Wordmark, btnPrimary, btnGhost, inputBase } from "@/components/ui";
 import { importLicks } from "@/app/licks/import/actions";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/dictionaries";
 
 export default async function Home({
   searchParams,
@@ -12,6 +15,7 @@ export default async function Home({
   searchParams: Promise<{ q?: string; tag?: string }>;
 }) {
   const { q, tag } = await searchParams;
+  const t = getDictionary(await getLocale());
   const [licks, tags] = await Promise.all([licksRepo.list({ q, tag }), licksRepo.allTags()]);
 
   return (
@@ -19,15 +23,16 @@ export default async function Home({
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
         <div>
           <Wordmark className="text-4xl" />
-          <p className="mt-1 text-sm text-ink-soft">모아둔 기타 릭 {licks.length}개</p>
+          <p className="mt-1 text-sm text-ink-soft">{t.licksCount(licks.length)}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <LanguageSwitcher />
           <a href="/api/export" className={btnGhost}>
-            내보내기
+            {t.exportJson}
           </a>
           <ImportButton action={importLicks} />
           <Link href="/licks/new" className={btnPrimary}>
-            + 새 릭
+            + {t.newLick}
           </Link>
         </div>
       </header>
@@ -36,8 +41,8 @@ export default async function Home({
         <input
           name="q"
           defaultValue={q}
-          placeholder="제목·메모·태그 검색…"
-          aria-label="릭 검색"
+          placeholder={t.searchPlaceholder}
+          aria-label={t.searchAria}
           className={inputBase}
         />
       </form>
@@ -49,12 +54,12 @@ export default async function Home({
       )}
 
       {licks.length === 0 ? (
-        <EmptyState filtered={Boolean(q || tag)} />
+        <EmptyState filtered={Boolean(q || tag)} t={t} />
       ) : (
         <ul className="divide-y divide-dotted divide-rule">
           {licks.map((l) => (
             <li key={l.id}>
-              <LickCard lick={l} />
+              <LickCard lick={l} t={t} />
             </li>
           ))}
         </ul>
@@ -63,16 +68,24 @@ export default async function Home({
   );
 }
 
-function EmptyState({ filtered }: { filtered: boolean }) {
+function EmptyState({
+  filtered,
+  t,
+}: {
+  filtered: boolean;
+  t: ReturnType<typeof getDictionary>;
+}) {
   return (
     <div role="status" className="rounded-lg border border-dashed border-rule px-6 py-16 text-center">
-      <p className="font-serif text-2xl text-ink">{filtered ? "결과가 없어요" : "아직 비어 있어요"}</p>
+      <p className="font-serif text-2xl text-ink">
+        {filtered ? t.emptyTitleFiltered : t.emptyTitleEmpty}
+      </p>
       <p className="mt-2 text-sm text-ink-soft">
-        {filtered ? "검색어나 태그를 바꿔보세요." : "마음에 든 릭을 한 줄씩 적어두세요."}
+        {filtered ? t.emptyBodyFiltered : t.emptyBodyEmpty}
       </p>
       {!filtered && (
         <Link href="/licks/new" className={`${btnPrimary} mt-5`}>
-          + 첫 릭 적기
+          + {t.writeFirst}
         </Link>
       )}
     </div>

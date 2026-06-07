@@ -3,6 +3,7 @@ import { useState } from "react";
 import { TabEditor } from "./TabEditor";
 import { TabView } from "./TabView";
 import { btnPrimary, inputBase } from "./ui";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { STANDARD_TUNING, type Column } from "@/lib/tab/types";
 
 const TUNINGS: Record<string, string[]> = {
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export function LickForm({ initial, action, submitLabel }: Props) {
+  const { t } = useI18n();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [tuning, setTuning] = useState<string[]>(initial?.tuning ?? STANDARD_TUNING);
   const [tab, setTab] = useState<Column[]>(initial?.tab ?? [{ notes: [] }]);
@@ -51,22 +53,22 @@ export function LickForm({ initial, action, submitLabel }: Props) {
 
   return (
     <form action={submit} className="space-y-6">
-      <Field label="제목" htmlFor="title">
+      <Field label={t.titleLabel} htmlFor="title">
         <input
           id="title"
           className={`${inputBase} font-serif text-lg`}
-          placeholder="예: BB 박스 벤딩"
+          placeholder={t.titlePlaceholder}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
       </Field>
 
-      <Field label="TAB">
+      <Field label={t.tabLabel}>
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
             <label htmlFor="tuning" className="text-ink-soft">
-              튜닝
+              {t.tuningLabel}
             </label>
             <select
               id="tuning"
@@ -87,31 +89,31 @@ export function LickForm({ initial, action, submitLabel }: Props) {
       </Field>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <Field label="태그" htmlFor="tags" hint="쉼표로 구분">
+        <Field label={t.tagsLabel} htmlFor="tags" hint={t.tagsHint}>
           <input
             id="tags"
             className={inputBase}
-            placeholder="blues, bb-king"
+            placeholder={t.tagsPlaceholder}
             value={tagsText}
             onChange={(e) => setTagsText(e.target.value)}
           />
         </Field>
-        <Field label="출처" htmlFor="source" hint="곡명 / 링크">
+        <Field label={t.sourceLabel} htmlFor="source" hint={t.sourceHint}>
           <input
             id="source"
             className={inputBase}
-            placeholder="youtube.com/…"
+            placeholder={t.sourcePlaceholder}
             value={source}
             onChange={(e) => setSource(e.target.value)}
           />
         </Field>
       </div>
 
-      <Field label="메모" htmlFor="memo">
+      <Field label={t.memoLabel} htmlFor="memo">
         <textarea
           id="memo"
           className={inputBase}
-          placeholder="어디서 따왔는지, 어떤 느낌인지…"
+          placeholder={t.memoPlaceholder}
           rows={3}
           value={memo}
           onChange={(e) => setMemo(e.target.value)}

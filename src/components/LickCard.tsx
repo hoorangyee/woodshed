@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { TabStaff } from "./TabStaff";
 import type { LickRecord } from "@/lib/db/licks";
+import type { Dict } from "@/lib/i18n/dictionaries";
 
 /** 노트의 한 줄(엔트리)처럼 보이는 릭 행 */
-export function LickCard({ lick }: { lick: LickRecord }) {
+export function LickCard({ lick, t }: { lick: LickRecord; t: Dict }) {
   const noteCount = lick.tab.filter((c) => c.notes.length > 0).length;
   return (
     <Link
@@ -23,9 +24,9 @@ export function LickCard({ lick }: { lick: LickRecord }) {
               </span>
             ))
           ) : (
-            <span className="text-ink-faint">태그 없음</span>
+            <span className="text-ink-faint">{t.noTags}</span>
           )}
-          <span className="text-ink-faint">· {noteCount}음</span>
+          <span className="text-ink-faint">· {t.noteCount(noteCount)}</span>
         </div>
       </div>
       <div className="w-full shrink-0 sm:w-[18rem]">

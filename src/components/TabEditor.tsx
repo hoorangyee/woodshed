@@ -3,6 +3,8 @@ import { useRef, useState } from "react";
 import { STRING_COUNT, TOGGLE_KEYS, type Column, type Articulation } from "@/lib/tab/types";
 import { addColumn, removeColumn, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import type { Dict } from "@/lib/i18n/dictionaries";
 
 interface Props {
   tab: Column[];
@@ -13,18 +15,19 @@ interface Props {
 // 위→아래 표시 순서의 줄 인덱스 (고음 e=5 가 맨 위)
 const ROWS = Array.from({ length: STRING_COUNT }, (_, i) => STRING_COUNT - 1 - i);
 
-// 주법 툴바 버튼
-const TOOLS: { artic: Articulation; glyph: string; label: string }[] = [
-  { artic: "h", glyph: "h", label: "해머온" },
-  { artic: "p", glyph: "p", label: "풀오프" },
-  { artic: "/", glyph: "╱", label: "슬라이드↑" },
-  { artic: "\\", glyph: "╲", label: "슬라이드↓" },
-  { artic: "b", glyph: "↗", label: "풀 벤딩" },
-  { artic: "b½", glyph: "↗½", label: "하프 벤딩" },
-  { artic: "~", glyph: "∿", label: "비브라토" },
+// 주법 툴바 버튼 (라벨은 사전 키로 참조)
+const TOOLS: { artic: Articulation; glyph: string; labelKey: keyof Dict }[] = [
+  { artic: "h", glyph: "h", labelKey: "hammerOn" },
+  { artic: "p", glyph: "p", labelKey: "pullOff" },
+  { artic: "/", glyph: "╱", labelKey: "slideUp" },
+  { artic: "\\", glyph: "╲", labelKey: "slideDown" },
+  { artic: "b", glyph: "↗", labelKey: "fullBend" },
+  { artic: "b½", glyph: "↗½", labelKey: "halfBend" },
+  { artic: "~", glyph: "∿", labelKey: "vibrato" },
 ];
 
 export function TabEditor({ tab, tuning, onChange }: Props) {
+  const { t } = useI18n();
   const [active, setActive] = useState<{ col: number; string: number } | null>(null);
   // 직전에 누른 숫자들(두 자리 프렛 입력용 윈도). 셀 표시는 항상 실제 note 값을 따른다.
   const [buffer, setBuffer] = useState("");
@@ -121,7 +124,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         ref={inputRef}
         type="text"
         inputMode="numeric"
-        aria-label="프렛 숫자 입력"
+        aria-label={t.fretInputAria}
         tabIndex={-1}
         autoComplete="off"
         className="sr-only"
@@ -174,7 +177,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
             })}
             <button
               type="button"
-              aria-label={`칸 삭제 ${c}`}
+              aria-label={t.deleteColumn(c)}
               onClick={() => onChange(removeColumn(tab, c))}
               className="mt-1.5 flex h-5 items-center justify-center text-xs text-ink-faint transition-colors hover:text-accent"
             >
@@ -185,7 +188,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
 
         <button
           type="button"
-          aria-label="칸 추가"
+          aria-label={t.addColumn}
           onClick={() => onChange(addColumn(tab))}
           className="ml-1 flex w-9 items-center justify-center self-center rounded-md border border-dashed border-rule py-2 text-lg text-ink-soft transition-colors hover:border-accent hover:text-accent"
         >
@@ -196,22 +199,25 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
       {/* 주법 툴바 */}
       <div className="rounded-lg border border-rule bg-paper-raised p-2">
         <div className="mb-1.5 flex items-center gap-2 px-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">주법</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">
+            {t.articulations}
+          </span>
           <span className="text-xs text-ink-faint">
-            {activeNote ? "버튼으로 켜고 끄기" : "음을 선택하면 적용할 수 있어요"}
+            {activeNote ? t.articToggleHint : t.selectNoteHint}
           </span>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {TOOLS.map((t) => {
-            const on = activeNote?.artic === t.artic;
+          {TOOLS.map((tool) => {
+            const on = activeNote?.artic === tool.artic;
+            const label = t[tool.labelKey] as string;
             return (
               <button
-                key={t.artic}
+                key={tool.artic}
                 type="button"
                 aria-pressed={on}
-                aria-label={t.label}
+                aria-label={label}
                 disabled={!activeNote}
-                onClick={() => applyArtic(t.artic)}
+                onClick={() => applyArtic(tool.artic)}
                 className={`flex min-w-[3.75rem] flex-col items-center gap-0.5 rounded-md border px-2 py-1.5 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                   on
                     ? "border-accent bg-accent text-paper-raised"
@@ -219,29 +225,26 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
                 }`}
               >
                 <span className={`font-mono text-base leading-none ${on ? "" : "text-accent"}`}>
-                  {t.glyph}
+                  {tool.glyph}
                 </span>
-                <span>{t.label}</span>
+                <span>{label}</span>
               </button>
             );
           })}
           <button
             type="button"
-            aria-label="음 지우기"
+            aria-label={t.clearNote}
             disabled={!activeNote}
             onClick={clearActiveNote}
             className="flex min-w-[3.75rem] flex-col items-center gap-0.5 rounded-md border border-rule bg-paper-raised px-2 py-1.5 text-[11px] text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span className="font-mono text-base leading-none">⌫</span>
-            <span>음 지우기</span>
+            <span>{t.clearNote}</span>
           </button>
         </div>
       </div>
 
-      <p className="text-xs text-ink-faint">
-        팁: 칸을 탭하면 숫자 키패드가 떠요. 두 자리는 숫자를 이어서 누르세요(최대 24). 주법은 위 버튼{" "}
-        또는 단축키(<span className="font-mono">h p / \ b ~</span>)로 입력합니다.
-      </p>
+      <p className="text-xs text-ink-faint">{t.editorTip}</p>
     </div>
   );
 }
