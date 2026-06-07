@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { STRING_COUNT, TOGGLE_KEYS, type Column, type Articulation } from "@/lib/tab/types";
 import { addColumn, removeColumn, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
@@ -13,10 +13,26 @@ interface Props {
 // 위→아래 표시 순서의 줄 인덱스 (고음 e=5 가 맨 위)
 const ROWS = Array.from({ length: STRING_COUNT }, (_, i) => STRING_COUNT - 1 - i);
 
+// 주법 툴바 버튼
+const TOOLS: { artic: Articulation; glyph: string; label: string }[] = [
+  { artic: "h", glyph: "h", label: "해머온" },
+  { artic: "p", glyph: "p", label: "풀오프" },
+  { artic: "/", glyph: "╱", label: "슬라이드↑" },
+  { artic: "\\", glyph: "╲", label: "슬라이드↓" },
+  { artic: "b", glyph: "↗", label: "풀 벤딩" },
+  { artic: "b½", glyph: "↗½", label: "하프 벤딩" },
+  { artic: "~", glyph: "∿", label: "비브라토" },
+];
+
 export function TabEditor({ tab, tuning, onChange }: Props) {
   const [active, setActive] = useState<{ col: number; string: number } | null>(null);
   // 직전에 누른 숫자들(두 자리 프렛 입력용 윈도). 셀 표시는 항상 실제 note 값을 따른다.
   const [buffer, setBuffer] = useState("");
+  const activeRef = useRef<HTMLButtonElement>(null);
+
+  const activeNote = active
+    ? tab[active.col]?.notes.find((n) => n.string === active.string)
+    : undefined;
 
   function handleKey(e: React.KeyboardEvent, col: number, string: number) {
     if (/^[0-9]$/.test(e.key)) {
@@ -45,8 +61,21 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     }
   }
 
+  // 툴바: 활성 음에 주법 토글
+  function applyArtic(artic: Articulation) {
+    if (!active || !activeNote) return;
+    onChange(toggleArtic(tab, active.col, active.string, artic));
+    activeRef.current?.focus();
+  }
+
+  function clearArtic() {
+    if (!active || !activeNote?.artic) return;
+    onChange(setNote(tab, active.col, { string: active.string, fret: activeNote.fret }));
+    activeRef.current?.focus();
+  }
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
         {/* 줄 라벨 */}
         <div className="flex flex-col pr-1 text-sm font-medium text-ink-soft">
@@ -65,6 +94,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
               return (
                 <button
                   key={s}
+                  ref={isActive ? activeRef : undefined}
                   type="button"
                   aria-label={`string-${s}-col-${c}`}
                   onClick={() => {
@@ -113,11 +143,55 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
           +
         </button>
       </div>
-      <p className="text-xs text-ink-soft">
-        칸을 누르고 <kbd className="rounded bg-paper-sunk px-1">숫자</kbd>(0–24) · 주법{" "}
-        <kbd className="rounded bg-paper-sunk px-1">h p / \ ~</kbd> · 벤딩{" "}
-        <kbd className="rounded bg-paper-sunk px-1">b</kbd>(풀→하프) · 지우기{" "}
-        <kbd className="rounded bg-paper-sunk px-1">Backspace</kbd>
+
+      {/* 주법 툴바 */}
+      <div className="rounded-lg border border-rule bg-paper-raised p-2">
+        <div className="mb-1.5 flex items-center gap-2 px-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">주법</span>
+          <span className="text-xs text-ink-faint">
+            {activeNote ? "버튼으로 켜고 끄기" : "음을 선택하면 적용할 수 있어요"}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {TOOLS.map((t) => {
+            const on = activeNote?.artic === t.artic;
+            return (
+              <button
+                key={t.artic}
+                type="button"
+                aria-pressed={on}
+                aria-label={t.label}
+                disabled={!activeNote}
+                onClick={() => applyArtic(t.artic)}
+                className={`flex min-w-[3.75rem] flex-col items-center gap-0.5 rounded-md border px-2 py-1.5 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                  on
+                    ? "border-accent bg-accent text-paper-raised"
+                    : "border-rule bg-paper-raised text-ink-soft hover:border-ink-soft hover:text-ink"
+                }`}
+              >
+                <span className={`font-mono text-base leading-none ${on ? "" : "text-accent"}`}>
+                  {t.glyph}
+                </span>
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            aria-label="주법 지우기"
+            disabled={!activeNote?.artic}
+            onClick={clearArtic}
+            className="flex min-w-[3.75rem] flex-col items-center gap-0.5 rounded-md border border-rule bg-paper-raised px-2 py-1.5 text-[11px] text-ink-soft transition-colors hover:border-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <span className="font-mono text-base leading-none">⌫</span>
+            <span>주법 지우기</span>
+          </button>
+        </div>
+      </div>
+
+      <p className="text-xs text-ink-faint">
+        팁: 칸을 누르고 <kbd className="rounded bg-paper-sunk px-1 text-ink-soft">숫자</kbd>(0–24)로 프렛
+        입력. 주법은 위 버튼 또는 단축키(<span className="font-mono">h p / \ b ~</span>)로도 가능.
       </p>
     </div>
   );

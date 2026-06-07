@@ -49,4 +49,23 @@ describe("TabEditor", () => {
     await user.keyboard("12");
     expect(cell).toHaveTextContent("12");
   });
+
+  it("applies an articulation to the active note via the toolbar button", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    const cell = screen.getByRole("button", { name: "string-2-col-0" });
+    await user.click(cell);
+    await user.keyboard("7");
+    // 음을 만들기 전에는 비활성, 만든 뒤 클릭하면 적용된다
+    const vibrato = screen.getByRole("button", { name: "비브라토" });
+    expect(vibrato).toBeEnabled();
+    await user.click(vibrato);
+    expect(cell).toHaveTextContent("7~");
+    expect(vibrato).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("disables toolbar buttons when no note is selected", () => {
+    render(<Harness />);
+    expect(screen.getByRole("button", { name: "풀 벤딩" })).toBeDisabled();
+  });
 });
