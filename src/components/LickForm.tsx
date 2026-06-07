@@ -20,6 +20,7 @@ export interface LickFormValue {
   source: string;
   tags: string[];
   visibility: Visibility;
+  youtubeUrl: string;
 }
 
 interface Props {
@@ -37,6 +38,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
   const [source, setSource] = useState(initial?.source ?? "");
   const [tagsText, setTagsText] = useState((initial?.tags ?? []).join(", "));
   const [visibility, setVisibility] = useState<Visibility>(initial?.visibility ?? "private");
+  const [youtubeUrl, setYoutubeUrl] = useState(initial?.youtubeUrl ?? "");
 
   function submit(formData: FormData) {
     const value: LickFormValue = {
@@ -46,6 +48,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
       memo,
       source,
       visibility,
+      youtubeUrl,
       tags: tagsText
         .split(",")
         .map((t) => t.trim())
@@ -127,6 +130,18 @@ export function LickForm({ initial, action, submitLabel }: Props) {
           rows={3}
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
+        />
+      </Field>
+
+      <Field label={t.audioLabel} htmlFor="youtubeUrl" hint={t.audioHint}>
+        <input
+          id="youtubeUrl"
+          type="url"
+          inputMode="url"
+          className={inputBase}
+          placeholder={t.youtubePlaceholder}
+          value={youtubeUrl}
+          onChange={(e) => setYoutubeUrl(e.target.value)}
         />
       </Field>
 

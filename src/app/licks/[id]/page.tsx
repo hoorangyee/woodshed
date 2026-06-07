@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { licksRepo } from "@/lib/db/licks";
 import { socialRepo } from "@/lib/db/social";
 import { TabView } from "@/components/TabView";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
+import { parseYouTube } from "@/lib/youtube";
 import { DeleteButton } from "@/components/DeleteButton";
 import { CopyLink } from "@/components/CopyLink";
 import { LikeButton } from "@/components/LikeButton";
@@ -130,6 +132,16 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
       ) : null}
 
       <TabView tab={lick.tab} tuning={lick.tuning} />
+
+      {(() => {
+        const yt = parseYouTube(lick.youtubeUrl);
+        return yt ? (
+          <div className="mt-6">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-soft">{t.listen}</p>
+            <YouTubeEmbed id={yt.id} start={yt.start} />
+          </div>
+        ) : null;
+      })()}
 
       {(lick.source || lick.memo) && (
         <dl className="mt-6 space-y-4">

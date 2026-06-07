@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { licksRepo, type LickInput } from "@/lib/db/licks";
 import { currentUser } from "@/lib/auth/current-user";
+import { isYouTubeUrl } from "@/lib/youtube";
 
 const noteSchema = z.object({
   string: z.number().int().min(0).max(5),
@@ -18,6 +19,12 @@ const inputSchema = z.object({
   source: z.string(),
   tags: z.array(z.string()),
   visibility: z.enum(["public", "unlisted", "private"]).default("private"),
+  // Keep only a valid YouTube URL; anything else is dropped to "".
+  youtubeUrl: z
+    .string()
+    .trim()
+    .default("")
+    .transform((v) => (isYouTubeUrl(v) ? v : "")),
 });
 
 function parsePayload(formData: FormData): LickInput {

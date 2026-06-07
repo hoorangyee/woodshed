@@ -69,6 +69,8 @@ export const licks = sqliteTable(
     tab: text("tab").notNull(), // JSON Column[]
     memo: text("memo").notNull().default(""),
     source: text("source").notNull().default(""),
+    youtubeUrl: text("youtube_url"), // optional YouTube link (hear the lick)
+    audioUrl: text("audio_url"), // optional uploaded audio clip (Vercel Blob URL)
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },

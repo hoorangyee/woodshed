@@ -108,6 +108,11 @@ const en = {
   sourcePlaceholder: "youtube.com/…",
   memoLabel: "Memo",
   memoPlaceholder: "Where you picked it up, how it feels…",
+  audioLabel: "Audio",
+  audioHint: "hear the lick",
+  youtubePlaceholder: "YouTube link (optional) — supports start time",
+  playOnYouTube: "Play",
+  listen: "Listen",
   save: "Save",
   update: "Update",
 
@@ -244,6 +249,11 @@ const ko: Dict = {
   sourcePlaceholder: "youtube.com/…",
   memoLabel: "메모",
   memoPlaceholder: "어디서 따왔는지, 어떤 느낌인지…",
+  audioLabel: "오디오",
+  audioHint: "릭 들어보기",
+  youtubePlaceholder: "YouTube 링크(선택) — 시작 시간 지원",
+  playOnYouTube: "재생",
+  listen: "들어보기",
   save: "저장하기",
   update: "수정하기",
 

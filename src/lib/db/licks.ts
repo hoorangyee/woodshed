@@ -15,12 +15,14 @@ export interface LickInput {
   source: string;
   tags: string[];
   visibility: Visibility;
+  youtubeUrl: string;
 }
 
 export interface LickRecord extends LickInput {
   id: string;
   ownerId: string | null;
   hidden: boolean;
+  audioUrl: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -99,6 +101,8 @@ export function makeLicksRepo(db: DB) {
       tab: JSON.parse(row.tab),
       memo: row.memo,
       source: row.source,
+      youtubeUrl: row.youtubeUrl ?? "",
+      audioUrl: row.audioUrl ?? "",
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       tags: tagList,
@@ -131,6 +135,7 @@ export function makeLicksRepo(db: DB) {
         tab: JSON.stringify(input.tab),
         memo: input.memo,
         source: input.source,
+        youtubeUrl: input.youtubeUrl || null,
         createdAt: now,
         updatedAt: now,
       });
@@ -182,6 +187,7 @@ export function makeLicksRepo(db: DB) {
           tab: JSON.stringify(input.tab),
           memo: input.memo,
           source: input.source,
+          youtubeUrl: input.youtubeUrl || null,
           updatedAt: Date.now(),
         })
         .where(eq(licks.id, id));
