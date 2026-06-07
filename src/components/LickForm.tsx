@@ -36,7 +36,10 @@ export function LickForm({ initial, action, submitLabel }: Props) {
   const { t } = useI18n();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [tuning, setTuning] = useState<string[]>(initial?.tuning ?? STANDARD_TUNING);
-  const [tab, setTab] = useState<Column[]>(initial?.tab ?? [{ notes: [] }]);
+  // New licks start with a few empty columns to write into; editing keeps the saved tab.
+  const [tab, setTab] = useState<Column[]>(
+    initial?.tab ?? Array.from({ length: 7 }, () => ({ notes: [] })),
+  );
   const [memo, setMemo] = useState(initial?.memo ?? "");
   const [source, setSource] = useState(initial?.source ?? "");
   const [tagsText, setTagsText] = useState((initial?.tags ?? []).join(", "));
