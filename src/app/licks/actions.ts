@@ -7,7 +7,7 @@ import { licksRepo, type LickInput } from "@/lib/db/licks";
 const noteSchema = z.object({
   string: z.number().int().min(0).max(5),
   fret: z.number().int().min(0).max(24),
-  artic: z.enum(["h", "p", "/", "\\", "b", "~"]).optional(),
+  artic: z.enum(["h", "p", "/", "\\", "b", "b½", "~"]).optional(),
 });
 const inputSchema = z.object({
   title: z.string().trim().min(1, "제목을 입력하세요"),

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { addColumn, removeColumn, setNote, clearNote, toggleArtic } from "./editor-ops";
+import { addColumn, removeColumn, setNote, clearNote, toggleArtic, cycleBend } from "./editor-ops";
 import type { Column } from "./types";
 
 const base: Column[] = [{ notes: [] }];
@@ -40,6 +40,23 @@ describe("toggleArtic", () => {
   it("replaces a different articulation", () => {
     let cols = setNote(base, 0, { string: 2, fret: 5, artic: "h" });
     cols = toggleArtic(cols, 0, 2, "b");
+    expect(cols[0].notes[0].artic).toBe("b");
+  });
+});
+
+describe("cycleBend", () => {
+  it("cycles none → full → half → none", () => {
+    let cols = setNote(base, 0, { string: 2, fret: 5 });
+    cols = cycleBend(cols, 0, 2);
+    expect(cols[0].notes[0].artic).toBe("b");
+    cols = cycleBend(cols, 0, 2);
+    expect(cols[0].notes[0].artic).toBe("b½");
+    cols = cycleBend(cols, 0, 2);
+    expect(cols[0].notes[0].artic).toBeUndefined();
+  });
+  it("overrides a non-bend articulation by starting at full", () => {
+    let cols = setNote(base, 0, { string: 2, fret: 5, artic: "/" });
+    cols = cycleBend(cols, 0, 2);
     expect(cols[0].notes[0].artic).toBe("b");
   });
 });

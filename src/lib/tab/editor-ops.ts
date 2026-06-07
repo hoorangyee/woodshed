@@ -37,3 +37,15 @@ export function toggleArtic(
     };
   });
 }
+
+/** 벤딩 순환: 없음 → 풀(b) → 하프(b½) → 없음 */
+export function cycleBend(cols: Column[], colIndex: number, string: number): Column[] {
+  const next = (artic: Articulation | undefined): Articulation | undefined =>
+    artic === "b" ? "b½" : artic === "b½" ? undefined : "b";
+  return cols.map((col, i) => {
+    if (i !== colIndex) return col;
+    return {
+      notes: col.notes.map((n) => (n.string === string ? { ...n, artic: next(n.artic) } : n)),
+    };
+  });
+}

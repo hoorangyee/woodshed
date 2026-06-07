@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { STRING_COUNT, ARTICULATIONS, type Column, type Articulation } from "@/lib/tab/types";
-import { addColumn, removeColumn, setNote, clearNote, toggleArtic } from "@/lib/tab/editor-ops";
+import { STRING_COUNT, TOGGLE_KEYS, type Column, type Articulation } from "@/lib/tab/types";
+import { addColumn, removeColumn, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
 
 interface Props {
@@ -35,7 +35,11 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
       e.preventDefault();
       onChange(clearNote(tab, col, string));
       setBuffer("");
-    } else if (ARTICULATIONS.includes(e.key as Articulation)) {
+    } else if (e.key === "b") {
+      // 벤딩: 풀 → 하프 → 해제 순환
+      e.preventDefault();
+      onChange(cycleBend(tab, col, string));
+    } else if (TOGGLE_KEYS.includes(e.key as Articulation)) {
       e.preventDefault();
       onChange(toggleArtic(tab, col, string, e.key as Articulation));
     }
@@ -110,8 +114,9 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         </button>
       </div>
       <p className="text-xs text-ink-soft">
-        칸을 누르고 <kbd className="rounded bg-paper-sunk px-1">숫자</kbd>(0–24) 입력 · 주법{" "}
-        <kbd className="rounded bg-paper-sunk px-1">h p / \ b ~</kbd> · 지우기{" "}
+        칸을 누르고 <kbd className="rounded bg-paper-sunk px-1">숫자</kbd>(0–24) · 주법{" "}
+        <kbd className="rounded bg-paper-sunk px-1">h p / \ ~</kbd> · 벤딩{" "}
+        <kbd className="rounded bg-paper-sunk px-1">b</kbd>(풀→하프) · 지우기{" "}
         <kbd className="rounded bg-paper-sunk px-1">Backspace</kbd>
       </p>
     </div>

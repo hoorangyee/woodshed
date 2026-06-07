@@ -1,5 +1,8 @@
-export type Articulation = "h" | "p" | "/" | "\\" | "b" | "~";
-export const ARTICULATIONS: Articulation[] = ["h", "p", "/", "\\", "b", "~"];
+// b = 풀 벤딩(온음), b½ = 하프 벤딩(반음)
+export type Articulation = "h" | "p" | "/" | "\\" | "b" | "b½" | "~";
+export const ARTICULATIONS: Articulation[] = ["h", "p", "/", "\\", "b", "b½", "~"];
+// 단일 키로 토글되는 주법(벤딩은 b 키로 별도 순환 처리)
+export const TOGGLE_KEYS: Articulation[] = ["h", "p", "/", "\\", "~"];
 
 export interface Note {
   string: number; // 0 = 저음 E ... 5 = 고음 e
