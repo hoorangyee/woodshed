@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
-/* ── Woodshed 디자인 토큰 (따뜻한 우드 + 파인 그린) ─────────────── */
+/* ── Woodshed design tokens (warm wood + pine green) ─────────────── */
 @theme {
-  --color-paper: #f0e9d9; /* 따뜻한 오트/리넨 */
-  --color-paper-raised: #fbf7ec; /* 카드/입력 등 떠보이는 면 */
-  --color-paper-sunk: #e6dcc5; /* 눌린 면(트랙/보표 홈) */
-  --color-ink: #2b2417; /* 본문 잉크(월넛 에스프레소) */
-  --color-ink-soft: #6a5f4a; /* 보조 텍스트 */
-  --color-ink-faint: #a69a80; /* 흐린 텍스트(placeholder 등) */
-  --color-rule: #dbd0b6; /* 괘선 / 경계 */
-  --color-accent: #2f6b4f; /* 파인 그린 — 단일 액센트(케이스 내장) */
-  --color-accent-ink: #245540; /* 액센트 진한 변형(hover) */
+  --color-paper: #f0e9d9; /* warm oat/linen */
+  --color-paper-raised: #fbf7ec; /* raised surfaces: cards, inputs */
+  --color-paper-sunk: #e6dcc5; /* sunken surfaces: tracks, staff grooves */
+  --color-ink: #2b2417; /* body ink (walnut espresso) */
+  --color-ink-soft: #6a5f4a; /* secondary text */
+  --color-ink-faint: #a69a80; /* faint text (placeholders, etc.) */
+  --color-rule: #dbd0b6; /* rules / borders */
+  --color-accent: #2f6b4f; /* pine green — single accent */
+  --color-accent-ink: #245540; /* darker accent variant (hover) */
 
   --font-serif: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);
@@ -25,7 +25,7 @@
 
 body {
   background-color: var(--color-paper);
-  /* 아주 옅은 따뜻함 + 그린 기운만 더함 */
+  /* a very faint warm + green wash */
   background-image:
     radial-gradient(circle at 15% 10%, rgba(47, 107, 79, 0.05), transparent 42%),
     radial-gradient(circle at 85% 90%, rgba(43, 36, 23, 0.04), transparent 45%);
@@ -38,14 +38,14 @@ body {
   background: rgba(47, 107, 79, 0.16);
 }
 
-/* 포커스 링: 액센트 그린 */
+/* focus ring: accent green */
 *:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* 노트 괘선(점선) 구분자 */
+/* notebook rule (dotted) divider */
 .rule-dotted {
   border-bottom: 1px dotted var(--color-rule);
 }
