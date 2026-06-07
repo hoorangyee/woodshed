@@ -41,6 +41,8 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   function onGripDown(e: React.PointerEvent, c: number) {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
+    const r = colEls.current[c]?.getBoundingClientRect();
+    grab.current = r ? { dx: e.clientX - r.left, dy: e.clientY - r.top } : { dx: 0, dy: 0 };
     setDragCol(c);
     setDropTarget(c);
     setDragPos({ x: e.clientX, y: e.clientY });
@@ -87,6 +89,8 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   const [dragNote, setDragNote] = useState<{ col: number; string: number } | null>(null);
   const [dropCell, setDropCell] = useState<{ col: number; string: number } | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+  // Offset of the pointer within the grabbed element, so the ghost keeps that offset (no snap-to-center).
+  const grab = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
 
   function cellAt(x: number, y: number): { col: number; string: number } | null {
     const el = (document.elementFromPoint(x, y) as HTMLElement | null)?.closest<HTMLElement>("[data-cell]");
@@ -95,6 +99,8 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   }
   function onCellPointerDown(e: React.PointerEvent, c: number, s: number, has: boolean) {
     justDragged.current = false;
+    const r = e.currentTarget.getBoundingClientRect();
+    grab.current = { dx: e.clientX - r.left, dy: e.clientY - r.top };
     press.current = { col: c, string: s, x: e.clientX, y: e.clientY, has, dragging: false };
   }
   function onCellPointerMove(e: React.PointerEvent) {
@@ -234,35 +240,47 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         defaultValue=""
       />
 
-      {/* Drag ghost — a lifted replica of the dragged cell/column, centered on the grab point */}
+      {/* Drag ghost — a lifted replica that keeps the grab offset (follows the cursor as-is) */}
       {dragPos &&
         (() => {
-          const ghostCell = (n: Note | undefined, key: React.Key) => (
+          const ghostCell = (n: Note | undefined, key: React.Key, isActive: boolean) => (
             <span
               key={key}
-              className="relative flex h-8 w-9 items-center justify-center text-sm tabular-nums text-ink"
+              className={`relative flex h-8 w-9 items-center justify-center text-sm tabular-nums ${
+                isActive ? "rounded bg-accent font-medium text-paper-raised" : "text-ink"
+              }`}
             >
-              <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-rule" />
+              {!isActive && (
+                <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-rule" />
+              )}
               <span className="relative z-10">
-                {n ? cellToken(n) : <span className="text-transparent">·</span>}
+                {n ? cellToken(n) : <span className={isActive ? "" : "text-transparent"}>·</span>}
               </span>
             </span>
           );
           let cells: React.ReactNode = null;
+          let wrap = "";
           if (dragNote) {
             const n = tab[dragNote.col]?.notes.find((x) => x.string === dragNote.string);
             if (!n) return null;
-            cells = ghostCell(n, "n");
+            cells = ghostCell(n, "n", true); // keep the green focus form
           } else if (dragCol !== null && tab[dragCol]) {
             const col = tab[dragCol];
-            cells = ROWS.map((s) => ghostCell(col.notes.find((x) => x.string === s), s));
+            cells = ROWS.map((s) =>
+              ghostCell(
+                col.notes.find((x) => x.string === s),
+                s,
+                active?.col === dragCol && active?.string === s,
+              ),
+            );
+            wrap = "rounded-md bg-paper-sunk";
           } else {
             return null;
           }
           return (
             <div
-              className="pointer-events-none fixed z-50 flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-rule bg-paper-sunk p-1 font-mono shadow-lg"
-              style={{ left: dragPos.x, top: dragPos.y }}
+              className={`pointer-events-none fixed z-50 flex flex-col font-mono shadow-lg ${wrap}`}
+              style={{ left: dragPos.x - grab.current.dx, top: dragPos.y - grab.current.dy }}
             >
               {cells}
             </div>
