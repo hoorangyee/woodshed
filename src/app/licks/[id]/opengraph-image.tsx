@@ -137,7 +137,6 @@ function TabBlock({ tab, tuning }: { tab: Column[]; tuning: string[] }) {
         ))}
       </div>
       <div style={{ position: "relative", display: "flex", width: staffW, height: totalH, marginLeft: 8 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={dataUri} width={staffW} height={totalH} style={{ position: "absolute", left: 0, top: 0 }} alt="" />
         {chips}
       </div>
