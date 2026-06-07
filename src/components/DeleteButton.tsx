@@ -11,7 +11,7 @@ export function DeleteButton({ action }: { action: (formData: FormData) => void 
       <button
         type="button"
         onClick={() => setArmed(true)}
-        className="rounded-md border border-rule px-3 py-1.5 text-sm text-ink-soft transition-colors hover:border-danger hover:text-danger"
+        className="rounded-md border border-danger px-3 py-1.5 text-sm text-danger transition-colors hover:bg-danger hover:text-paper-raised"
       >
         {t.del}
       </button>
