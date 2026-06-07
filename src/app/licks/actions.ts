@@ -33,7 +33,7 @@ const noteSchema = z.object({
 const inputSchema = z.object({
   title: z.string().trim().min(1),
   tuning: z.array(z.string()).length(6),
-  tab: z.array(z.object({ notes: z.array(noteSchema) })),
+  tab: z.array(z.object({ notes: z.array(noteSchema), whiskey: z.boolean().optional() })),
   memo: z.string(),
   source: z.string(),
   tags: z.array(z.string()),

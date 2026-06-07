@@ -23,6 +23,11 @@ export function toAscii(tab: Column[], tuning: string[]): string {
     const label = (tuning[s] ?? "?").padStart(1, " ");
     let line = `${label}|`;
     tab.forEach((col, c) => {
+      if (col.whiskey) {
+        // A whiskey break — same glyph on every line so it reads as a "sip here" column.
+        line += "-🥃";
+        return;
+      }
       const note = col.notes.find((n) => n.string === s);
       const token = note ? cellToken(note) : "";
       const w = widths[c];

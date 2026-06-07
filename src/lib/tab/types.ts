@@ -12,6 +12,8 @@ export interface Note {
 
 export interface Column {
   notes: Note[];
+  /** A "whiskey break" column 🥃 — the bluesman sips between notes. */
+  whiskey?: boolean;
 }
 
 export interface Lick {

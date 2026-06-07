@@ -8,6 +8,12 @@ export function removeColumn(cols: Column[], index: number): Column[] {
   return cols.filter((_, i) => i !== index);
 }
 
+/** Insert a "whiskey break" column 🥃 at the given index. */
+export function insertWhiskey(cols: Column[], at: number): Column[] {
+  const i = Math.max(0, Math.min(cols.length, at));
+  return [...cols.slice(0, i), { notes: [], whiskey: true }, ...cols.slice(i)];
+}
+
 /** Move the column at `from` to position `to` (drag-and-drop reorder). */
 export function moveColumn(cols: Column[], from: number, to: number): Column[] {
   if (from === to || from < 0 || to < 0 || from >= cols.length || to >= cols.length) return cols;

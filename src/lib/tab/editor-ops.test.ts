@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   addColumn,
   removeColumn,
+  insertWhiskey,
   moveColumn,
   moveNote,
   setNote,
@@ -39,6 +40,17 @@ describe("moveColumn", () => {
     const c = cols(1, 2, 3);
     expect(moveColumn(c, 1, 1)).toBe(c);
     expect(moveColumn(c, 0, 9)).toBe(c);
+  });
+});
+
+describe("insertWhiskey", () => {
+  it("inserts a whiskey-break column at the index", () => {
+    const t: Column[] = [{ notes: [{ string: 0, fret: 1 }] }, { notes: [{ string: 0, fret: 2 }] }];
+    const r = insertWhiskey(t, 1);
+    expect(r).toHaveLength(3);
+    expect(r[1]).toEqual({ notes: [], whiskey: true });
+    expect(r[0].notes[0].fret).toBe(1);
+    expect(r[2].notes[0].fret).toBe(2);
   });
 });
 

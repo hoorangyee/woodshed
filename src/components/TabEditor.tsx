@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { STRING_COUNT, TOGGLE_KEYS, type Column, type Note, type Articulation } from "@/lib/tab/types";
-import { addColumn, removeColumn, moveColumn, moveNote, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
+import { addColumn, removeColumn, insertWhiskey, moveColumn, moveNote, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Dict } from "@/lib/i18n/dictionaries";
@@ -341,7 +341,12 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
             >
               ⠿
             </button>
-            {ROWS.map((s) => {
+            {col.whiskey ? (
+              <div className="flex h-48 w-9 items-center justify-center text-2xl" title="Whiskey break">
+                🥃
+              </div>
+            ) : (
+              ROWS.map((s) => {
               const note = col.notes.find((n) => n.string === s);
               const isActive = active?.col === c && active?.string === s;
               const isDropCell = dropCell?.col === c && dropCell?.string === s;
@@ -389,7 +394,8 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
                   </span>
                 </button>
               );
-            })}
+            })
+            )}
             <button
               type="button"
               aria-label={t.deleteColumn(c)}
@@ -408,6 +414,15 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
           className="ml-1 flex w-9 items-center justify-center self-center rounded-md border border-dashed border-rule py-2 text-lg text-ink-soft transition-colors hover:border-accent hover:text-accent"
         >
           +
+        </button>
+        <button
+          type="button"
+          aria-label={t.addWhiskey}
+          title={t.addWhiskey}
+          onClick={() => onChange(insertWhiskey(tab, active ? active.col + 1 : tab.length))}
+          className="ml-1 flex w-9 items-center justify-center self-center rounded-md border border-dashed border-rule py-2 text-lg transition-colors hover:border-accent"
+        >
+          🥃
         </button>
       </div>
 

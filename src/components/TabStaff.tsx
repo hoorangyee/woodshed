@@ -277,6 +277,19 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
             </span>
           )),
         )}
+
+        {/* Whiskey breaks 🥃 — a sip between notes */}
+        {cols.map((col, c) =>
+          col.whiskey ? (
+            <span
+              key={`w${c}`}
+              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 leading-none"
+              style={{ left: x(c), top: HEAD + staffH / 2, fontSize: compact ? 15 : 22 }}
+            >
+              🥃
+            </span>
+          ) : null,
+        )}
       </div>
     </div>
   );
