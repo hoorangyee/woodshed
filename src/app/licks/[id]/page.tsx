@@ -7,6 +7,7 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { CopyLink } from "@/components/CopyLink";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm } from "@/components/CommentForm";
+import { AddToCollection } from "@/components/AddToCollection";
 import { InkLink, btnGhost } from "@/components/ui";
 import { deleteLick } from "../actions";
 import { deleteComment } from "@/lib/social-actions";
@@ -30,6 +31,11 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
     user ? socialRepo.likes.isLiked(user.id, id) : Promise.resolve(false),
     socialRepo.comments.list(id),
   ]);
+
+  const myCollections = user ? await socialRepo.collections.listByOwner(user.id) : [];
+  const containedIds = user
+    ? await socialRepo.collections.collectionIdsContaining(user.id, id)
+    : [];
 
   const shareable = lick.visibility !== "private";
   const del = deleteLick.bind(null, id);
@@ -69,6 +75,13 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <LikeButton lickId={id} initialLiked={liked} initialCount={likeCount} canLike={!!user} />
+          {user && (
+            <AddToCollection
+              lickId={id}
+              collections={myCollections.map((c) => ({ id: c.id, title: c.title }))}
+              containedIds={containedIds}
+            />
+          )}
           {shareable && <CopyLink />}
           {isOwner && (
             <>

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { socialRepo } from "@/lib/db/social";
 import { licksRepo } from "@/lib/db/licks";
 import { currentUser } from "@/lib/auth/current-user";
+import type { Visibility } from "@/lib/db/schema";
 
 /* ── 좋아요 ─────────────────────────────────────────────── */
 export async function toggleLike(lickId: string): Promise<{ liked: boolean; count: number }> {
@@ -38,4 +39,54 @@ export async function deleteComment(commentId: string, lickId: string) {
   if (c.userId !== user.id && lick?.ownerId !== user.id) return;
   await socialRepo.comments.remove(commentId);
   revalidatePath(`/licks/${lickId}`);
+}
+
+/* ── 컬렉션 ─────────────────────────────────────────────── */
+const titleSchema = z.string().trim().min(1).max(100);
+
+export async function createCollection(formData: FormData) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const title = titleSchema.safeParse(formData.get("title"));
+  if (!title.success) return;
+  const visibility = (String(formData.get("visibility") ?? "private") as Visibility) ?? "private";
+  const id = await socialRepo.collections.create(user.id, { title: title.data, visibility });
+  revalidatePath("/collections");
+  redirect(`/collections/${id}`);
+}
+
+export async function deleteCollection(id: string) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const c = await socialRepo.collections.get(id);
+  if (!c || c.ownerId !== user.id) redirect("/collections");
+  await socialRepo.collections.remove(id);
+  revalidatePath("/collections");
+  redirect("/collections");
+}
+
+/** 컬렉션에 릭 추가/제거 토글. 새 포함 상태를 반환. */
+export async function toggleInCollection(collectionId: string, lickId: string): Promise<boolean> {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const c = await socialRepo.collections.get(collectionId);
+  if (!c || c.ownerId !== user.id) return false;
+  const contained = await socialRepo.collections.collectionIdsContaining(user.id, lickId);
+  if (contained.includes(collectionId)) {
+    await socialRepo.collections.removeLick(collectionId, lickId);
+    revalidatePath(`/collections/${collectionId}`);
+    return false;
+  }
+  await socialRepo.collections.addLick(collectionId, lickId);
+  revalidatePath(`/collections/${collectionId}`);
+  return true;
+}
+
+export async function removeFromCollection(collectionId: string, lickId: string) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const c = await socialRepo.collections.get(collectionId);
+  if (!c || c.ownerId !== user.id) return;
+  await socialRepo.collections.removeLick(collectionId, lickId);
+  revalidatePath(`/collections/${collectionId}`);
 }

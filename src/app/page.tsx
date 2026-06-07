@@ -60,6 +60,9 @@ export default async function Home({
             <Link href="/explore" className={btnGhost}>
               {t.explore}
             </Link>
+            <Link href="/collections" className={btnGhost}>
+              {t.collections}
+            </Link>
             <a href="/api/export" className={btnGhost}>
               {t.exportJson}
             </a>
