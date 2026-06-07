@@ -119,6 +119,11 @@ const en = {
   audioTooLarge: "File too large (max 8MB).",
   audioBadType: "Audio files only.",
   audioUploadFailed: "Upload failed. Try again.",
+  importFromImage: "Import from image",
+  converting: "Reading image…",
+  convertFailed: "Couldn't read the TAB. Try a clearer image.",
+  importHint: "AI-read — please review and fix.",
+  importOverwriteConfirm: "Replace the current TAB with the imported one?",
   save: "Save",
   update: "Update",
 
@@ -266,6 +271,11 @@ const ko: Dict = {
   audioTooLarge: "파일이 너무 큽니다 (최대 8MB).",
   audioBadType: "오디오 파일만 가능합니다.",
   audioUploadFailed: "업로드 실패. 다시 시도해 주세요.",
+  importFromImage: "이미지에서 변환",
+  converting: "이미지 읽는 중…",
+  convertFailed: "탭을 읽지 못했어요. 더 선명한 이미지로 시도해 주세요.",
+  importHint: "AI 인식 결과 — 검수·수정해 주세요.",
+  importOverwriteConfirm: "현재 TAB을 변환 결과로 교체할까요?",
   save: "저장하기",
   update: "수정하기",
 

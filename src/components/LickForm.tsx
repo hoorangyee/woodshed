@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TabEditor } from "./TabEditor";
 import { TabView } from "./TabView";
+import { TabImport } from "./TabImport";
 import { AudioUpload } from "./AudioUpload";
 import { btnPrimary, inputBase } from "./ui";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -62,6 +63,13 @@ export function LickForm({ initial, action, submitLabel }: Props) {
     action(formData);
   }
 
+  function applyImport(r: { tuning: string[]; tab: Column[] }) {
+    const hasNotes = tab.some((c) => c.notes.length > 0);
+    if (hasNotes && !window.confirm(t.importOverwriteConfirm)) return;
+    setTuning(r.tuning);
+    setTab(r.tab.length ? r.tab : [{ notes: [] }]);
+  }
+
   const visOptions: { value: Visibility; label: string }[] = [
     { value: "private", label: t.visPrivate },
     { value: "unlisted", label: t.visUnlisted },
@@ -83,22 +91,25 @@ export function LickForm({ initial, action, submitLabel }: Props) {
 
       <Field label={t.tabLabel}>
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm">
-            <label htmlFor="tuning" className="text-ink-soft">
-              {t.tuningLabel}
-            </label>
-            <select
-              id="tuning"
-              className="rounded-md border border-rule bg-paper-raised px-2 py-1 text-ink focus:border-accent"
-              value={
-                Object.keys(TUNINGS).find((k) => TUNINGS[k].join() === tuning.join()) ?? "Standard"
-              }
-              onChange={(e) => setTuning(TUNINGS[e.target.value])}
-            >
-              {Object.keys(TUNINGS).map((k) => (
-                <option key={k}>{k}</option>
-              ))}
-            </select>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <label htmlFor="tuning" className="text-ink-soft">
+                {t.tuningLabel}
+              </label>
+              <select
+                id="tuning"
+                className="rounded-md border border-rule bg-paper-raised px-2 py-1 text-ink focus:border-accent"
+                value={
+                  Object.keys(TUNINGS).find((k) => TUNINGS[k].join() === tuning.join()) ?? "Standard"
+                }
+                onChange={(e) => setTuning(TUNINGS[e.target.value])}
+              >
+                {Object.keys(TUNINGS).map((k) => (
+                  <option key={k}>{k}</option>
+                ))}
+              </select>
+            </div>
+            <TabImport onResult={applyImport} />
           </div>
           <TabEditor tab={tab} tuning={tuning} onChange={setTab} />
           <TabView tab={tab} tuning={tuning} />
