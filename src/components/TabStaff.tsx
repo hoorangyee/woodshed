@@ -1,11 +1,5 @@
 import { STRING_COUNT, type Column, type Articulation } from "@/lib/tab/types";
 
-// Articulations shown as small glyphs on the chip (slide=diagonal, bend=curved arrow; vibrato=wavy line handled separately)
-const ARTIC_GLYPH: Partial<Record<Articulation, string>> = {
-  h: "h",
-  p: "p",
-};
-
 const SLIDES = new Set<Articulation>(["/", "\\"]);
 const BENDS = new Set<Articulation>(["b", "b½"]);
 
@@ -42,8 +36,8 @@ function wavyPath(cx: number, y: number, width: number, amp: number, wl: number)
 
 /**
  * Renders TAB as a graphic staff. Fret chips sit on six string lines;
- * slides are diagonals between notes, bends are curved arrows (full / ½),
- * and vibrato is a wavy line above the note.
+ * slides are diagonals, bends are curved arrows (full / ½), vibrato is a wavy line,
+ * and hammer-ons/pull-offs are slur arcs (H / P) connecting the two notes.
  */
 export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = false }: Props) {
   const cols = tab.length > 0 ? tab : [{ notes: [] }];
@@ -132,6 +126,33 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
     }
   });
 
+  // Hammer-on (H) / pull-off (P): a slur arc above the staff connecting the two notes
+  type Slur = { path: string; label: string; lx: number; ly: number };
+  const slurs: Slur[] = [];
+  const arcUp = compact ? 9 : 13;
+  const slurLift = compact ? 5 : 7;
+  cols.forEach((col, c) => {
+    for (const note of col.notes) {
+      if (note.artic !== "h" && note.artic !== "p") continue;
+      const nextCol = cols[c + 1];
+      const target =
+        nextCol?.notes.find((n) => n.string === note.string) ??
+        (nextCol?.notes.length === 1 ? nextCol.notes[0] : undefined);
+      const x1 = x(c) + inset;
+      const x2 = target ? x(c + 1) - inset : x1 + COL_W * 0.5;
+      const y1 = y(note.string) - slurLift;
+      const y2 = (target ? y(target.string) : y(note.string)) - slurLift;
+      const apex = Math.min(y1, y2) - arcUp;
+      const midX = (x1 + x2) / 2;
+      slurs.push({
+        path: `M ${x1} ${y1} Q ${midX} ${apex} ${x2} ${y2}`,
+        label: note.artic === "h" ? "H" : "P",
+        lx: midX,
+        ly: apex - (compact ? 1 : 2),
+      });
+    }
+  });
+
   const chipText = compact ? "text-[11px]" : "text-sm";
   const labelText = compact ? "text-[10px]" : "text-xs";
   const bendLabelSize = compact ? 7 : 9;
@@ -198,6 +219,28 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
               strokeLinecap="round"
             />
           ))}
+          {/* Hammer-on / pull-off slurs */}
+          {slurs.map((sl, i) => (
+            <g key={`h${i}`}>
+              <path
+                d={sl.path}
+                fill="none"
+                stroke="var(--color-accent)"
+                strokeWidth={compact ? 1.25 : 1.5}
+                strokeLinecap="round"
+              />
+              <text
+                x={sl.lx}
+                y={sl.ly}
+                fontSize={compact ? 7 : 10}
+                fontStyle="italic"
+                textAnchor="middle"
+                fill="var(--color-accent)"
+              >
+                {sl.label}
+              </text>
+            </g>
+          ))}
           {/* Bend curved arrows */}
           {bends.map((b, i) => (
             <g key={`b${i}`}>
@@ -224,23 +267,15 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
 
         {/* Fret chips */}
         {cols.map((col, c) =>
-          col.notes.map((note) => {
-            const glyph = note.artic ? ARTIC_GLYPH[note.artic] : undefined;
-            return (
-              <span
-                key={`${c}-${note.string}`}
-                className={`absolute z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center rounded-md px-1 font-medium tabular-nums text-ink ${surface} ${chipText}`}
-                style={{ left: x(c), top: y(note.string) }}
-              >
-                {note.fret}
-                {glyph && (
-                  <sup className="ml-px font-mono text-[0.6em] font-semibold text-accent">
-                    {glyph}
-                  </sup>
-                )}
-              </span>
-            );
-          }),
+          col.notes.map((note) => (
+            <span
+              key={`${c}-${note.string}`}
+              className={`absolute z-10 inline-flex -translate-x-1/2 -translate-y-1/2 items-center rounded-md px-1 font-medium tabular-nums text-ink ${surface} ${chipText}`}
+              style={{ left: x(c), top: y(note.string) }}
+            >
+              {note.fret}
+            </span>
+          )),
         )}
       </div>
     </div>

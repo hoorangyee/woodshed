@@ -164,13 +164,34 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     onChange(setNote(tab, col, { string, fret, artic: existing?.artic }));
   }
 
-  // Physical keyboard (desktop): handle digits/articulations/delete
+  // Move the active cell with clamping (arrow keys). Up = toward high e (string+1).
+  function moveActive(col: number, string: number) {
+    setActive({
+      col: Math.max(0, Math.min(tab.length - 1, col)),
+      string: Math.max(0, Math.min(STRING_COUNT - 1, string)),
+    });
+    setBuffer("");
+  }
+
+  // Physical keyboard (desktop): handle digits/articulations/delete/arrows
   function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
     if (!active) return;
     const { col, string } = active;
     if (/^[0-9]$/.test(e.key)) {
       e.preventDefault();
       commitDigit(col, string, e.key);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      moveActive(col - 1, string);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      moveActive(col + 1, string);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveActive(col, string + 1);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveActive(col, string - 1);
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setBuffer("");
