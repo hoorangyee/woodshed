@@ -27,14 +27,6 @@ export default async function LoginPage() {
           >
             <button className={`${btnPrimary} w-full`}>{t.signInGoogle}</button>
           </form>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("github", { redirectTo: "/" });
-            }}
-          >
-            <button className={`${btnGhost} w-full justify-center`}>{t.signInGithub}</button>
-          </form>
         </div>
 
         {devLogin && (

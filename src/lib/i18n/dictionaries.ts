@@ -13,7 +13,6 @@ const en = {
   wrongPassword: "Incorrect password.",
 
   signInGoogle: "Continue with Google",
-  signInGithub: "Continue with GitHub",
   signOut: "Sign out",
   chooseHandle: "Choose your handle",
   handleIntro: "This is your public name on Woodshed.",
@@ -128,7 +127,6 @@ const ko: Dict = {
   wrongPassword: "비밀번호가 올바르지 않습니다.",
 
   signInGoogle: "Google로 계속",
-  signInGithub: "GitHub로 계속",
   signOut: "로그아웃",
   chooseHandle: "핸들을 정하세요",
   handleIntro: "Woodshed에서 공개적으로 쓰일 이름입니다.",

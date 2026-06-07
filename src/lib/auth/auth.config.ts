@@ -1,6 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
 
 /**
  * 엣지 안전(edge-safe) 설정. 미들웨어에서 JWT 검증에만 사용하며
@@ -10,7 +9,7 @@ export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
   trustHost: true,
   pages: { signIn: "/login" },
-  providers: [Google, GitHub],
+  providers: [Google],
   callbacks: {
     jwt({ token, user }) {
       if (user?.id) token.id = user.id;
