@@ -9,44 +9,39 @@ export const maxDuration = 30;
 const MAX_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 
-const SYSTEM = `You read an image of guitar tablature (TAB) and output JSON matching the schema.
+const SYSTEM = `You read an image of guitar tablature (TAB) and output JSON: a FLAT list of notes.
 
-Rules:
-- A TAB has 6 horizontal lines (strings). The TOP line is the highest-pitched string; the BOTTOM line is the lowest.
-- Output "string" index: 0 = lowest string (low E), 1 = A, 2 = D, 3 = G, 4 = B, 5 = highest (high e). So the bottom line is string 0 and the top line is string 5.
-- "tab" is an array of columns ordered left to right in time. Make one column per horizontal position that has a fret number. A single number = one note in that column; numbers stacked vertically at the same position = a chord (multiple notes in one column).
-- For each fret number output { string, fret, artic }. fret is the number (0-24).
-- Articulations adjacent to a number: h = hammer-on, p = pull-off, / = slide up, \\\\ = slide down, b = full bend, b½ = half/partial bend, ~ = vibrato. If none, use "".
-- "tuning": read the string labels on the left if shown; otherwise ["E","A","D","G","B","e"].
-- Ignore bar lines, dashes, spacing and decorations — emit only real fret numbers, left to right.
-- If the image has no readable TAB, return standard tuning and an empty tab array.`;
+Strings:
+- A TAB has 6 horizontal lines. The TOP line is the highest-pitched string; the BOTTOM line is the lowest.
+- "string" index: 0 = lowest (low E) [bottom line], 1 = A, 2 = D, 3 = G, 4 = B, 5 = highest (high e) [top line].
+
+For EVERY fret number in the image, output one note { string, fret, artic, x }:
+- "fret" = the number written on the line (0-24).
+- "x" = the note's HORIZONTAL position across the TAB, scaled 0 (far left) to 1000 (far right). Measure it carefully from the image — this is what determines timing and rhythm. Keep x proportional to the real spacing, so wide gaps (rests/pauses) produce large jumps in x and tightly grouped notes have close x values.
+- Notes that sound at the SAME time (a chord — numbers stacked vertically at the same horizontal spot) MUST share the same x.
+- "artic": a symbol attached to the number — h = hammer-on, p = pull-off, / = slide up, \\\\ = slide down, b = full bend, b½ = half/partial bend, ~ = vibrato. If none, "".
+
+Also return "tuning": the 6 string labels low→high if shown on the left, otherwise ["E","A","D","G","B","e"].
+
+Ignore bar lines, dashes and decorations — emit only real fret numbers. List notes left to right. If there is no readable TAB, return an empty notes array.`;
 
 const SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["tuning", "tab"],
+  required: ["tuning", "notes"],
   properties: {
     tuning: { type: "array", items: { type: "string" } },
-    tab: {
+    notes: {
       type: "array",
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["notes"],
+        required: ["string", "fret", "artic", "x"],
         properties: {
-          notes: {
-            type: "array",
-            items: {
-              type: "object",
-              additionalProperties: false,
-              required: ["string", "fret", "artic"],
-              properties: {
-                string: { type: "integer" },
-                fret: { type: "integer" },
-                artic: { type: "string", enum: ["", "h", "p", "/", "\\", "b", "b½", "~"] },
-              },
-            },
-          },
+          string: { type: "integer" },
+          fret: { type: "integer" },
+          artic: { type: "string", enum: ["", "h", "p", "/", "\\", "b", "b½", "~"] },
+          x: { type: "integer" },
         },
       },
     },
