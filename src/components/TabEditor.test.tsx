@@ -68,4 +68,16 @@ describe("TabEditor", () => {
     render(<Harness />);
     expect(screen.getByRole("button", { name: "풀 벤딩" })).toBeDisabled();
   });
+
+  it("enters a fret via the on-screen number pad (touch-friendly)", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    // 칸 선택 전에는 숫자 패드 비활성
+    expect(screen.getByRole("button", { name: "프렛 7" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "string-2-col-0" }));
+    const cell = screen.getByRole("button", { name: "string-2-col-0" });
+    await user.click(screen.getByRole("button", { name: "프렛 1" }));
+    await user.click(screen.getByRole("button", { name: "프렛 2" }));
+    expect(cell).toHaveTextContent("12");
+  });
 });
