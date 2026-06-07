@@ -95,6 +95,16 @@ export function makeSocialRepo(db: DB) {
         await db.insert(comments).values({ id, lickId, userId, body, createdAt: Date.now() });
         return id;
       },
+      /** 여러 릭의 (숨김 제외) 댓글 수. 정렬·카드 표시용. */
+      async countsFor(lickIds: string[]): Promise<Record<string, number>> {
+        if (lickIds.length === 0) return {};
+        const rows = await db
+          .select({ lickId: comments.lickId, c: sql<number>`count(*)` })
+          .from(comments)
+          .where(and(inArray(comments.lickId, lickIds), eq(comments.hidden, 0)))
+          .groupBy(comments.lickId);
+        return Object.fromEntries(rows.map((r) => [r.lickId, Number(r.c)]));
+      },
       /** 레이트리밋용: sinceMs 이후 해당 사용자의 댓글 수. */
       async recentCountByUser(userId: string, sinceMs: number): Promise<number> {
         const rows = await db

@@ -8,10 +8,14 @@ export function LickCard({
   lick,
   t,
   authorHandle,
+  likeCount,
+  commentCount,
 }: {
   lick: LickRecord;
   t: Dict;
   authorHandle?: string | null;
+  likeCount?: number;
+  commentCount?: number;
 }) {
   const noteCount = lick.tab.filter((c) => c.notes.length > 0).length;
   return (
@@ -46,6 +50,11 @@ export function LickCard({
             <span className="text-ink-faint">{t.noTags}</span>
           )}
           <span className="text-ink-faint">· {t.noteCount(noteCount)}</span>
+          {(likeCount !== undefined || commentCount !== undefined) && (
+            <span className="text-ink-faint">
+              · ♥ {likeCount ?? 0} · 💬 {commentCount ?? 0}
+            </span>
+          )}
         </div>
       </div>
       <div className="w-full shrink-0 sm:w-[18rem]">

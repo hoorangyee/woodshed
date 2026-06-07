@@ -60,6 +60,15 @@ describe("comments", () => {
     await repo.comments.remove(id);
     expect(await repo.comments.list(L)).toHaveLength(0);
   });
+
+  it("counts comments per lick (batch)", async () => {
+    await repo.comments.add(L, A, "a");
+    await repo.comments.add(L, B, "b");
+    await repo.comments.add(L2, A, "c");
+    const counts = await repo.comments.countsFor([L, L2]);
+    expect(counts[L]).toBe(2);
+    expect(counts[L2]).toBe(1);
+  });
 });
 
 describe("collections", () => {
