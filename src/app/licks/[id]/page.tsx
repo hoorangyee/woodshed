@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { licksRepo } from "@/lib/db/licks";
+import { socialRepo } from "@/lib/db/social";
 import { TabView } from "@/components/TabView";
 import { DeleteButton } from "@/components/DeleteButton";
 import { CopyLink } from "@/components/CopyLink";
+import { LikeButton } from "@/components/LikeButton";
+import { CommentForm } from "@/components/CommentForm";
 import { InkLink, btnGhost } from "@/components/ui";
 import { deleteLick } from "../actions";
+import { deleteComment } from "@/lib/social-actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { currentUser } from "@/lib/auth/current-user";
@@ -20,7 +24,13 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
   // 비공개 릭은 소유자만 열람 가능
   if (lick.visibility === "private" && !isOwner) notFound();
 
-  const author = lick.ownerId ? await licksRepo.getAuthorById(lick.ownerId) : null;
+  const [author, likeCount, liked, comments] = await Promise.all([
+    lick.ownerId ? licksRepo.getAuthorById(lick.ownerId) : Promise.resolve(null),
+    socialRepo.likes.count(id),
+    user ? socialRepo.likes.isLiked(user.id, id) : Promise.resolve(false),
+    socialRepo.comments.list(id),
+  ]);
+
   const shareable = lick.visibility !== "private";
   const del = deleteLick.bind(null, id);
 
@@ -57,19 +67,18 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
             </div>
           )}
         </div>
-        {(shareable || isOwner) && (
-          <div className="flex shrink-0 items-center gap-2">
-            {shareable && <CopyLink />}
-            {isOwner && (
-              <>
-                <Link href={`/licks/${id}/edit`} className={btnGhost}>
-                  {t.edit}
-                </Link>
-                <DeleteButton action={del} />
-              </>
-            )}
-          </div>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          <LikeButton lickId={id} initialLiked={liked} initialCount={likeCount} canLike={!!user} />
+          {shareable && <CopyLink />}
+          {isOwner && (
+            <>
+              <Link href={`/licks/${id}/edit`} className={btnGhost}>
+                {t.edit}
+              </Link>
+              <DeleteButton action={del} />
+            </>
+          )}
+        </div>
       </div>
 
       <TabView tab={lick.tab} tuning={lick.tuning} />
@@ -94,6 +103,56 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
           )}
         </dl>
       )}
+
+      <section className="mt-10 border-t border-rule pt-6">
+        <h2 className="mb-4 font-serif text-xl text-ink">
+          {t.comments} <span className="text-ink-faint">{comments.length}</span>
+        </h2>
+        {user ? (
+          <CommentForm lickId={id} />
+        ) : (
+          <p className="text-sm text-ink-soft">{t.signInToComment}</p>
+        )}
+        {comments.length === 0 ? (
+          <p className="mt-5 text-sm text-ink-faint">{t.noComments}</p>
+        ) : (
+          <ul className="mt-5 space-y-4">
+            {comments.map((c) => {
+              const canDelete = !!user && (c.userId === user.id || isOwner);
+              const delComment = deleteComment.bind(null, c.id, id);
+              return (
+                <li key={c.id} className="rounded-lg border border-rule bg-paper-raised p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">
+                      {c.authorHandle ? (
+                        <Link href={`/u/${c.authorHandle}`} className="text-accent hover:underline">
+                          @{c.authorHandle}
+                        </Link>
+                      ) : (
+                        <span className="text-ink-soft">{c.authorName ?? "?"}</span>
+                      )}
+                      <span className="ml-2 text-xs text-ink-faint">
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {canDelete && (
+                      <form action={delComment}>
+                        <button
+                          aria-label={t.deleteCommentAria}
+                          className="text-xs text-ink-faint transition-colors hover:text-accent"
+                        >
+                          ✕
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                  <p className="mt-1 whitespace-pre-wrap text-ink">{c.body}</p>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

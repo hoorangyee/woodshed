@@ -15,6 +15,13 @@
       "when": 1780813529258,
       "tag": "0001_breezy_punisher",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1780815428250,
+      "tag": "0002_bent_tenebrous",
+      "breakpoints": true
     }
   ]
 }

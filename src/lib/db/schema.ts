@@ -91,4 +91,69 @@ export const lickTags = sqliteTable(
   (t) => [primaryKey({ columns: [t.lickId, t.tagId] })],
 );
 
+/* ── 소셜(SP3): 좋아요 · 댓글 · 컬렉션 ─────────────────────────── */
+export const likes = sqliteTable(
+  "likes",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lickId: text("lick_id")
+      .notNull()
+      .references(() => licks.id, { onDelete: "cascade" }),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.lickId] }), index("likes_lick_idx").on(t.lickId)],
+);
+
+export const comments = sqliteTable(
+  "comments",
+  {
+    id: text("id").primaryKey(),
+    lickId: text("lick_id")
+      .notNull()
+      .references(() => licks.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("comments_lick_idx").on(t.lickId)],
+);
+
+export const collections = sqliteTable(
+  "collections",
+  {
+    id: text("id").primaryKey(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description").notNull().default(""),
+    visibility: text("visibility").notNull().default("private"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (t) => [index("collections_owner_idx").on(t.ownerId)],
+);
+
+export const collectionItems = sqliteTable(
+  "collection_items",
+  {
+    collectionId: text("collection_id")
+      .notNull()
+      .references(() => collections.id, { onDelete: "cascade" }),
+    lickId: text("lick_id")
+      .notNull()
+      .references(() => licks.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    addedAt: integer("added_at").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.collectionId, t.lickId] }),
+    index("collection_items_col_idx").on(t.collectionId),
+  ],
+);
+
 export type Visibility = "public" | "unlisted" | "private";
