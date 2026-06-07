@@ -17,7 +17,18 @@ export function CopyLink({ path }: { path?: string }) {
       }}
       className="rounded-md border border-rule px-3 py-1.5 text-sm text-ink-soft transition-colors hover:border-accent hover:text-accent"
     >
-      {copied ? t.linkCopied : t.copyLink}
+      {/* Reserve the width of the widest label so the text swap doesn't reflow the row */}
+      <span className="grid">
+        <span aria-hidden className="invisible col-start-1 row-start-1 whitespace-nowrap">
+          {t.copyLink}
+        </span>
+        <span aria-hidden className="invisible col-start-1 row-start-1 whitespace-nowrap">
+          {t.linkCopied}
+        </span>
+        <span className="col-start-1 row-start-1 whitespace-nowrap text-center">
+          {copied ? t.linkCopied : t.copyLink}
+        </span>
+      </span>
     </button>
   );
 }

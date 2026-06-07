@@ -15,6 +15,30 @@ import { deleteComment } from "@/lib/social-actions";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { currentUser, isAdmin } from "@/lib/auth/current-user";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const lick = await licksRepo.get(id);
+  // Don't leak title/memo of private or moderator-hidden licks in link previews.
+  if (!lick || lick.visibility === "private" || lick.hidden) {
+    return { title: "Woodshed" };
+  }
+  const author = lick.ownerId ? await licksRepo.getAuthorById(lick.ownerId) : null;
+  const desc =
+    lick.memo?.trim().slice(0, 160) ||
+    `A guitar lick${author?.handle ? ` by @${author.handle}` : ""} on Woodshed.`;
+  return {
+    title: `${lick.title} · Woodshed`,
+    description: desc,
+    openGraph: { title: lick.title, description: desc, type: "article" },
+    twitter: { card: "summary_large_image", title: lick.title, description: desc },
+  };
+}
 
 export default async function LickDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

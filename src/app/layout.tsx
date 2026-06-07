@@ -22,6 +22,8 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  // Resolves relative OG/Twitter image URLs to absolute (crawlers need absolute URLs).
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://woodshed.band"),
   title: "Woodshed",
   description: "Woodshed — a place to collect and hone guitar licks",
 };
