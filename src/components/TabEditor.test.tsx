@@ -30,4 +30,23 @@ describe("TabEditor", () => {
     await user.keyboard("{Enter}");
     expect(onChange).toHaveBeenCalled();
   });
+
+  it("shows the typed digit immediately, before any commit key", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    const cell = screen.getByRole("button", { name: "string-2-col-0" });
+    await user.click(cell);
+    await user.keyboard("7");
+    // Enter 없이도 셀에 즉시 반영되어야 한다
+    expect(cell).toHaveTextContent("7");
+  });
+
+  it("accumulates two digits into a single fret (e.g. 12)", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    const cell = screen.getByRole("button", { name: "string-2-col-0" });
+    await user.click(cell);
+    await user.keyboard("12");
+    expect(cell).toHaveTextContent("12");
+  });
 });

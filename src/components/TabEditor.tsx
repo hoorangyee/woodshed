@@ -15,25 +15,28 @@ const ROWS = Array.from({ length: STRING_COUNT }, (_, i) => STRING_COUNT - 1 - i
 
 export function TabEditor({ tab, tuning, onChange }: Props) {
   const [active, setActive] = useState<{ col: number; string: number } | null>(null);
+  // 직전에 누른 숫자들(두 자리 프렛 입력용 윈도). 셀 표시는 항상 실제 note 값을 따른다.
   const [buffer, setBuffer] = useState("");
-
-  function commitFret(col: number, string: number) {
-    if (buffer === "") return;
-    const fret = Math.min(24, Math.max(0, parseInt(buffer, 10)));
-    onChange(setNote(tab, col, { string, fret }));
-    setBuffer("");
-  }
 
   function handleKey(e: React.KeyboardEvent, col: number, string: number) {
     if (/^[0-9]$/.test(e.key)) {
-      setBuffer((prev) => (prev + e.key).slice(-2));
-    } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      commitFret(col, string);
+      // 숫자를 누르는 즉시 커밋 → 셀과 미리보기에 실시간 반영
+      const nextBuf = (buffer + e.key).slice(-2);
+      const fret = Math.min(24, parseInt(nextBuf, 10));
+      const existing = tab[col]?.notes.find((n) => n.string === string);
+      setBuffer(nextBuf);
+      onChange(setNote(tab, col, { string, fret, artic: existing?.artic }));
+    } else if (e.key === "Enter" || e.key === " ") {
+      // 입력 확정: 다음 숫자는 새 프렛으로 시작
+      e.preventDefault();
+      setBuffer("");
     } else if (e.key === "Backspace" || e.key === "Delete") {
+      e.preventDefault();
       onChange(clearNote(tab, col, string));
       setBuffer("");
     } else if (ARTICULATIONS.includes(e.key as Articulation)) {
+      e.preventDefault();
       onChange(toggleArtic(tab, col, string, e.key as Articulation));
     }
   }
@@ -65,7 +68,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
                     setBuffer("");
                   }}
                   onKeyDown={(e) => handleKey(e, c, s)}
-                  onBlur={() => commitFret(c, s)}
+                  onBlur={() => setBuffer("")}
                   className={`relative flex h-8 w-9 items-center justify-center text-sm tabular-nums transition-colors ${
                     isActive
                       ? "rounded bg-accent font-medium text-paper-raised"

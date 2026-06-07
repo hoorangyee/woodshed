@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { toAscii } from "@/lib/tab/serialize";
+import { TabStaff } from "./TabStaff";
 import type { LickRecord } from "@/lib/db/licks";
 
 /** 노트의 한 줄(엔트리)처럼 보이는 릭 행 */
 export function LickCard({ lick }: { lick: LickRecord }) {
-  const preview = toAscii(lick.tab.slice(0, 12), lick.tuning);
   const noteCount = lick.tab.filter((c) => c.notes.length > 0).length;
   return (
     <Link
@@ -29,9 +28,9 @@ export function LickCard({ lick }: { lick: LickRecord }) {
           <span className="text-ink-faint">· {noteCount}음</span>
         </div>
       </div>
-      <pre className="shrink-0 overflow-hidden rounded bg-paper-sunk px-3 py-2 font-mono text-[11px] leading-[1.35] text-ink-soft sm:max-w-[18rem]">
-        {preview}
-      </pre>
+      <div className="w-full shrink-0 sm:w-[18rem]">
+        <TabStaff tab={lick.tab.slice(0, 12)} tuning={lick.tuning} surface="bg-paper-sunk" compact />
+      </div>
     </Link>
   );
 }
