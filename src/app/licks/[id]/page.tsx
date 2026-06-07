@@ -135,12 +135,14 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
 
       {(() => {
         const yt = parseYouTube(lick.youtubeUrl);
-        return yt ? (
-          <div className="mt-6">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-soft">{t.listen}</p>
-            <YouTubeEmbed id={yt.id} start={yt.start} />
+        if (!yt && !lick.audioUrl) return null;
+        return (
+          <div className="mt-6 space-y-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">{t.listen}</p>
+            {yt && <YouTubeEmbed id={yt.id} start={yt.start} />}
+            {lick.audioUrl && <audio controls src={lick.audioUrl} className="w-full" />}
           </div>
-        ) : null;
+        );
       })()}
 
       {(lick.source || lick.memo) && (

@@ -15,6 +15,7 @@ export default auth((req) => {
   const isLickImage = /^\/licks\/[^/]+\/(opengraph|twitter)-image/.test(pathname);
   const isPublic =
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/blob") || // auth enforced inside the upload handler
     pathname.startsWith("/login") ||
     pathname.startsWith("/explore") ||
     pathname.startsWith("/u/") ||

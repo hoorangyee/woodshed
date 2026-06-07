@@ -15,6 +15,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
     "@libsql/client": "^0.17.3",
+    "@vercel/blob": "^2.4.0",
     "drizzle-orm": "^0.45.2",
     "jose": "^6.2.3",
     "nanoid": "^5.1.11",

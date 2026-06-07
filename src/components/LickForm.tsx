@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TabEditor } from "./TabEditor";
 import { TabView } from "./TabView";
+import { AudioUpload } from "./AudioUpload";
 import { btnPrimary, inputBase } from "./ui";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { STANDARD_TUNING, type Column } from "@/lib/tab/types";
@@ -21,6 +22,7 @@ export interface LickFormValue {
   tags: string[];
   visibility: Visibility;
   youtubeUrl: string;
+  audioUrl: string;
 }
 
 interface Props {
@@ -39,6 +41,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
   const [tagsText, setTagsText] = useState((initial?.tags ?? []).join(", "));
   const [visibility, setVisibility] = useState<Visibility>(initial?.visibility ?? "private");
   const [youtubeUrl, setYoutubeUrl] = useState(initial?.youtubeUrl ?? "");
+  const [audioUrl, setAudioUrl] = useState(initial?.audioUrl ?? "");
 
   function submit(formData: FormData) {
     const value: LickFormValue = {
@@ -49,6 +52,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
       source,
       visibility,
       youtubeUrl,
+      audioUrl,
       tags: tagsText
         .split(",")
         .map((t) => t.trim())
@@ -134,15 +138,18 @@ export function LickForm({ initial, action, submitLabel }: Props) {
       </Field>
 
       <Field label={t.audioLabel} htmlFor="youtubeUrl" hint={t.audioHint}>
-        <input
-          id="youtubeUrl"
-          type="url"
-          inputMode="url"
-          className={inputBase}
-          placeholder={t.youtubePlaceholder}
-          value={youtubeUrl}
-          onChange={(e) => setYoutubeUrl(e.target.value)}
-        />
+        <div className="space-y-2">
+          <input
+            id="youtubeUrl"
+            type="url"
+            inputMode="url"
+            className={inputBase}
+            placeholder={t.youtubePlaceholder}
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+          />
+          <AudioUpload value={audioUrl} onChange={setAudioUrl} />
+        </div>
       </Field>
 
       <Field label={t.visibilityLabel} htmlFor="visibility">
