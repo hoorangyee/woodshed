@@ -2,6 +2,7 @@ import Link from "next/link";
 import { licksRepo } from "@/lib/db/licks";
 import { LickCard } from "@/components/LickCard";
 import { TagFilter } from "@/components/TagFilter";
+import { importLicks } from "@/app/licks/import/actions";
 
 export default async function Home({
   searchParams,
@@ -17,12 +18,26 @@ export default async function Home({
     <main className="mx-auto max-w-5xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Licks</h1>
-        <Link
-          href="/licks/new"
-          className="rounded bg-amber-500 px-4 py-2 font-medium text-neutral-900"
-        >
-          + 새 릭
-        </Link>
+        <div className="flex items-center gap-2">
+          <a href="/api/export" className="rounded bg-neutral-800 px-3 py-2 text-sm">
+            내보내기
+          </a>
+          <form action={importLicks} className="flex items-center">
+            <input
+              type="file"
+              name="file"
+              accept="application/json"
+              className="w-32 text-xs file:mr-2 file:rounded file:border-0 file:bg-neutral-700 file:px-2 file:py-1"
+            />
+            <button className="rounded bg-neutral-800 px-3 py-2 text-sm">가져오기</button>
+          </form>
+          <Link
+            href="/licks/new"
+            className="rounded bg-amber-500 px-4 py-2 font-medium text-neutral-900"
+          >
+            + 새 릭
+          </Link>
+        </div>
       </div>
       <form className="mb-4">
         <input
