@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-export function TagFilter({ tags }: { tags: string[] }) {
+export function TagFilter({ tags, basePath = "/" }: { tags: string[]; basePath?: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
@@ -13,7 +13,7 @@ export function TagFilter({ tags }: { tags: string[] }) {
     if (tag) next.set("tag", tag);
     else next.delete("tag");
     const qs = next.toString();
-    router.push(qs ? `/?${qs}` : "/");
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   }
 
   const chip = "rounded-full px-3 py-1 text-sm transition-colors";

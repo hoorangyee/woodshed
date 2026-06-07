@@ -1,0 +1,71 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { licksRepo } from "@/lib/db/licks";
+import { LickCard } from "@/components/LickCard";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Wordmark, btnGhost, btnPrimary } from "@/components/ui";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { currentUser } from "@/lib/auth/current-user";
+
+export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
+  const { handle } = await params;
+  const t = getDictionary(await getLocale());
+  const profile = await licksRepo.getUserByHandle(handle.toLowerCase());
+  if (!profile) notFound();
+
+  const [user, licks] = await Promise.all([
+    currentUser(),
+    licksRepo.listPublic({ ownerId: profile.id }),
+  ]);
+
+  return (
+    <main className="mx-auto max-w-3xl px-5 py-10">
+      <header className="mb-8 border-b border-rule pb-5">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <Wordmark className="text-2xl" />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            {user ? (
+              <Link href="/" className={btnGhost}>
+                {t.myLicks}
+              </Link>
+            ) : (
+              <Link href="/login" className={btnPrimary}>
+                {t.signIn}
+              </Link>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {profile.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.image} alt="" className="h-12 w-12 rounded-full" />
+          ) : (
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-accent text-lg text-paper-raised">
+              {(profile.handle ?? "?").slice(0, 1).toUpperCase()}
+            </span>
+          )}
+          <div>
+            <h1 className="font-serif text-2xl text-ink">@{profile.handle}</h1>
+            <p className="text-sm text-ink-soft">{t.publicCount(licks.length)}</p>
+          </div>
+        </div>
+      </header>
+
+      {licks.length === 0 ? (
+        <div role="status" className="rounded-lg border border-dashed border-rule px-6 py-16 text-center">
+          <p className="text-sm text-ink-soft">{t.profileEmpty}</p>
+        </div>
+      ) : (
+        <ul className="divide-y divide-dotted divide-rule">
+          {licks.map((l) => (
+            <li key={l.id}>
+              <LickCard lick={l} t={t} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  );
+}

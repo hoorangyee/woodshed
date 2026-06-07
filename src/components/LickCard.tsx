@@ -3,8 +3,16 @@ import { TabStaff } from "./TabStaff";
 import type { LickRecord } from "@/lib/db/licks";
 import type { Dict } from "@/lib/i18n/dictionaries";
 
-/** 노트의 한 줄(엔트리)처럼 보이는 릭 행 */
-export function LickCard({ lick, t }: { lick: LickRecord; t: Dict }) {
+/** 노트의 한 줄(엔트리)처럼 보이는 릭 행. authorHandle 지정 시 작성자 표기(탐색/프로필). */
+export function LickCard({
+  lick,
+  t,
+  authorHandle,
+}: {
+  lick: LickRecord;
+  t: Dict;
+  authorHandle?: string | null;
+}) {
   const noteCount = lick.tab.filter((c) => c.notes.length > 0).length;
   return (
     <Link
@@ -16,6 +24,12 @@ export function LickCard({ lick, t }: { lick: LickRecord; t: Dict }) {
           {lick.title}
         </h3>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-soft">
+          {authorHandle && (
+            <span className="text-accent">
+              @{authorHandle}
+              <span className="ml-2 text-ink-faint">·</span>
+            </span>
+          )}
           {lick.tags.length > 0 ? (
             lick.tags.map((t, i) => (
               <span key={t}>

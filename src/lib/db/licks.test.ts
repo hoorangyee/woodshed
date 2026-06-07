@@ -17,8 +17,8 @@ beforeEach(async () => {
   db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: "./drizzle" });
   await db.insert(users).values([
-    { id: A, name: "A", email: "a@example.com" },
-    { id: B, name: "B", email: "b@example.com" },
+    { id: A, name: "A", email: "a@example.com", handle: "alice" },
+    { id: B, name: "B", email: "b@example.com", handle: "bob" },
   ]);
   repo = makeLicksRepo(db);
 });
@@ -79,6 +79,37 @@ describe("licks repo", () => {
     await repo.create({ ...sample, tags: ["rock", "blues"] }, A);
     await repo.create({ ...sample, tags: ["solo"] }, B);
     expect((await repo.allTags(A)).sort()).toEqual(["bb-king", "blues", "rock"]);
+  });
+
+  it("listPublic returns only public licks with author, newest first", async () => {
+    await repo.create({ ...sample, title: "A private" }, A); // private
+    await repo.create({ ...sample, title: "A public", visibility: "public" }, A);
+    await repo.create({ ...sample, title: "B public", visibility: "public" }, B);
+    await repo.create({ ...sample, title: "A unlisted", visibility: "unlisted" }, A);
+
+    const pub = await repo.listPublic({});
+    expect(pub.map((l) => l.title).sort()).toEqual(["A public", "B public"]);
+    const aPub = pub.find((l) => l.title === "A public");
+    expect(aPub?.author?.handle).toBe("alice");
+  });
+
+  it("listPublic scopes to one owner (profile) and excludes non-public", async () => {
+    await repo.create({ ...sample, title: "A public", visibility: "public" }, A);
+    await repo.create({ ...sample, title: "A private" }, A);
+    await repo.create({ ...sample, title: "B public", visibility: "public" }, B);
+    const profile = await repo.listPublic({ ownerId: A });
+    expect(profile.map((l) => l.title)).toEqual(["A public"]);
+  });
+
+  it("getUserByHandle resolves a profile", async () => {
+    expect((await repo.getUserByHandle("alice"))?.id).toBe(A);
+    expect(await repo.getUserByHandle("nope")).toBeNull();
+  });
+
+  it("publicTags lists tags used by public licks only", async () => {
+    await repo.create({ ...sample, tags: ["secret"] }, A); // private
+    await repo.create({ ...sample, tags: ["blues", "rock"], visibility: "public" }, A);
+    expect((await repo.publicTags()).sort()).toEqual(["blues", "rock"]);
   });
 
   it("claims orphan (owner-less) licks for an owner", async () => {

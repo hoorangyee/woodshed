@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { licksRepo } from "@/lib/db/licks";
 import { TabView } from "@/components/TabView";
 import { DeleteButton } from "@/components/DeleteButton";
+import { CopyLink } from "@/components/CopyLink";
 import { InkLink, btnGhost } from "@/components/ui";
 import { deleteLick } from "../actions";
 import { getLocale } from "@/lib/i18n/locale";
@@ -19,6 +20,8 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
   // 비공개 릭은 소유자만 열람 가능
   if (lick.visibility === "private" && !isOwner) notFound();
 
+  const author = lick.ownerId ? await licksRepo.getAuthorById(lick.ownerId) : null;
+  const shareable = lick.visibility !== "private";
   const del = deleteLick.bind(null, id);
 
   return (
@@ -30,6 +33,14 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
       <div className="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-rule pb-5">
         <div className="min-w-0">
           <h1 className="font-serif text-3xl text-ink">{lick.title}</h1>
+          {author?.handle && (
+            <p className="mt-1 text-sm text-ink-soft">
+              {t.byAuthor}{" "}
+              <Link href={`/u/${author.handle}`} className="text-accent hover:underline">
+                @{author.handle}
+              </Link>
+            </p>
+          )}
           {lick.tags.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-ink-soft">
               {lick.tags.map((tag, i) => (
@@ -46,12 +57,17 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
             </div>
           )}
         </div>
-        {isOwner && (
+        {(shareable || isOwner) && (
           <div className="flex shrink-0 items-center gap-2">
-            <Link href={`/licks/${id}/edit`} className={btnGhost}>
-              {t.edit}
-            </Link>
-            <DeleteButton action={del} />
+            {shareable && <CopyLink />}
+            {isOwner && (
+              <>
+                <Link href={`/licks/${id}/edit`} className={btnGhost}>
+                  {t.edit}
+                </Link>
+                <DeleteButton action={del} />
+              </>
+            )}
           </div>
         )}
       </div>

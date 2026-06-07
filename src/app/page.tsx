@@ -57,6 +57,9 @@ export default async function Home({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-ink-soft">{t.licksCount(licks.length)}</p>
           <div className="flex flex-wrap items-center gap-2">
+            <Link href="/explore" className={btnGhost}>
+              {t.explore}
+            </Link>
             <a href="/api/export" className={btnGhost}>
               {t.exportJson}
             </a>
