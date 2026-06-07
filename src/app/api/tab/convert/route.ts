@@ -65,11 +65,15 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const dataUrl = `data:${file.type};base64,${Buffer.from(await file.arrayBuffer()).toString("base64")}`;
 
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  // GPT-5 / o-series reasoning models: use max_completion_tokens (not max_tokens) + lighter reasoning.
+  const isReasoning = /^(gpt-5|o\d)/i.test(model);
   try {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const completion = await client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-      max_tokens: 4000,
+      model,
+      max_completion_tokens: 8000,
+      ...(isReasoning ? { reasoning_effort: "minimal" as const } : {}),
       messages: [
         { role: "system", content: SYSTEM },
         {
@@ -85,9 +89,14 @@ export async function POST(request: Request): Promise<NextResponse> {
         json_schema: { name: "guitar_tab", strict: true, schema: SCHEMA },
       },
     });
-    const content = completion.choices[0]?.message?.content ?? "{}";
+    const content = completion.choices[0]?.message?.content?.trim() || "{}";
     return NextResponse.json(sanitizeTab(JSON.parse(content)));
-  } catch {
-    return NextResponse.json({ error: "Conversion failed. Try a clearer image." }, { status: 502 });
+  } catch (e) {
+    console.error("tab convert failed:", e);
+    const detail = e instanceof Error ? e.message : "unknown error";
+    return NextResponse.json(
+      { error: "Conversion failed. Try a clearer image.", detail },
+      { status: 502 },
+    );
   }
 }

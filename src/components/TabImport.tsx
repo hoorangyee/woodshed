@@ -24,7 +24,7 @@ export function TabImport({
       const res = await fetch("/api/tab/convert", { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setErr(data?.error || t.convertFailed);
+        setErr(data?.detail ? `${data.error ?? t.convertFailed} — ${data.detail}` : data?.error || t.convertFailed);
         return;
       }
       onResult({ tuning: data.tuning, tab: data.tab });
