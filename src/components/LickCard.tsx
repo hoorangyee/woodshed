@@ -19,13 +19,13 @@ export function LickCard({
 }) {
   const noteCount = lick.tab.filter((c) => c.notes.length > 0).length;
   return (
-    <Link
-      href={`/licks/${lick.id}`}
-      className="group flex flex-col gap-3 px-2 py-5 no-underline transition-colors hover:bg-paper-raised sm:flex-row sm:items-center sm:justify-between"
-    >
+    <div className="group relative flex flex-col gap-3 px-2 py-5 transition-colors hover:bg-paper-raised sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <h3 className="font-serif text-xl text-ink transition-colors group-hover:text-accent">
-          {lick.title}
+          {/* Stretched link: the whole card opens the lick, but nested links (author) stay clickable */}
+          <Link href={`/licks/${lick.id}`} className="no-underline after:absolute after:inset-0">
+            {lick.title}
+          </Link>
           {lick.hidden && (
             <span className="ml-2 rounded bg-accent/10 px-1.5 py-0.5 align-middle text-xs font-sans text-accent">
               {t.hiddenBadge}
@@ -34,8 +34,13 @@ export function LickCard({
         </h3>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-soft">
           {authorHandle && (
-            <span className="text-accent">
-              @{authorHandle}
+            <span>
+              <Link
+                href={`/u/${authorHandle}`}
+                className="relative z-10 text-accent no-underline hover:underline"
+              >
+                @{authorHandle}
+              </Link>
               <span className="ml-2 text-ink-faint">·</span>
             </span>
           )}
@@ -60,6 +65,6 @@ export function LickCard({
       <div className="w-full shrink-0 sm:w-[18rem]">
         <TabStaff tab={lick.tab.slice(0, 12)} tuning={lick.tuning} surface="bg-paper-sunk" compact />
       </div>
-    </Link>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { licksRepo } from "@/lib/db/licks";
+import { socialRepo } from "@/lib/db/social";
 import { LickCard } from "@/components/LickCard";
 import { SiteHeader } from "@/components/SiteHeader";
 import { btnGhost, btnPrimary } from "@/components/ui";
@@ -14,9 +15,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
   const profile = await licksRepo.getUserByHandle(handle.toLowerCase());
   if (!profile) notFound();
 
-  const [user, licks] = await Promise.all([
+  const [user, licks, collections] = await Promise.all([
     currentUser(),
     licksRepo.listPublic({ ownerId: profile.id }),
+    socialRepo.collections.listByOwner(profile.id, { publicOnly: true }),
   ]);
 
   return (
@@ -63,6 +65,25 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
             </li>
           ))}
         </ul>
+      )}
+
+      {collections.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-2 font-serif text-xl text-ink">{t.collections}</h2>
+          <ul className="divide-y divide-dotted divide-rule">
+            {collections.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/collections/${c.id}`}
+                  className="flex items-center justify-between py-4 no-underline transition-colors hover:text-accent"
+                >
+                  <span className="font-serif text-lg text-ink">{c.title}</span>
+                  <span className="text-sm text-ink-faint">{c.itemCount}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </main>
   );
