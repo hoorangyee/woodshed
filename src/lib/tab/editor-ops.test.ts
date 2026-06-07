@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { addColumn, removeColumn, moveColumn, setNote, clearNote, toggleArtic, cycleBend } from "./editor-ops";
+import {
+  addColumn,
+  removeColumn,
+  moveColumn,
+  moveNote,
+  setNote,
+  clearNote,
+  toggleArtic,
+  cycleBend,
+} from "./editor-ops";
 import type { Column } from "./types";
 
 const base: Column[] = [{ notes: [] }];
@@ -30,6 +39,33 @@ describe("moveColumn", () => {
     const c = cols(1, 2, 3);
     expect(moveColumn(c, 1, 1)).toBe(c);
     expect(moveColumn(c, 0, 9)).toBe(c);
+  });
+});
+
+describe("moveNote", () => {
+  it("moves a note (fret + artic) to an empty cell, keeping the articulation", () => {
+    const t: Column[] = [{ notes: [{ string: 3, fret: 14, artic: "b" }] }, { notes: [] }];
+    const r = moveNote(t, 0, 3, 1, 5);
+    expect(r[0].notes).toEqual([]);
+    expect(r[1].notes).toEqual([{ string: 5, fret: 14, artic: "b" }]);
+  });
+
+  it("inserts a new column when the target cell is occupied (pushes existing aside)", () => {
+    const t: Column[] = [
+      { notes: [{ string: 0, fret: 1 }] },
+      { notes: [{ string: 0, fret: 9 }] },
+    ];
+    const r = moveNote(t, 0, 0, 1, 0); // drop onto occupied (col1,string0)
+    expect(r).toHaveLength(3);
+    expect(r[0].notes).toEqual([]); // source emptied
+    expect(r[1].notes).toEqual([{ string: 0, fret: 1 }]); // moved into a fresh column
+    expect(r[2].notes).toEqual([{ string: 0, fret: 9 }]); // existing pushed right
+  });
+
+  it("is a no-op for the same cell or a missing source note", () => {
+    const t: Column[] = [{ notes: [{ string: 0, fret: 1 }] }];
+    expect(moveNote(t, 0, 0, 0, 0)).toBe(t);
+    expect(moveNote(t, 0, 2, 0, 3)).toBe(t);
   });
 });
 

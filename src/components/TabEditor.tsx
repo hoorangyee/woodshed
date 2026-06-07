@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { STRING_COUNT, TOGGLE_KEYS, type Column, type Articulation } from "@/lib/tab/types";
-import { addColumn, removeColumn, moveColumn, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
+import { addColumn, removeColumn, moveColumn, moveNote, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Dict } from "@/lib/i18n/dictionaries";
@@ -64,6 +64,50 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     }
     setDragCol(null);
     setDropTarget(null);
+  }
+
+  // Drag a single note (fret + articulation) onto another cell.
+  const press = useRef<{ col: number; string: number; x: number; y: number; has: boolean; dragging: boolean } | null>(null);
+  const justDragged = useRef(false);
+  const [dragNote, setDragNote] = useState<{ col: number; string: number } | null>(null);
+  const [dropCell, setDropCell] = useState<{ col: number; string: number } | null>(null);
+
+  function cellAt(x: number, y: number): { col: number; string: number } | null {
+    const el = (document.elementFromPoint(x, y) as HTMLElement | null)?.closest<HTMLElement>("[data-cell]");
+    if (!el) return null;
+    return { col: Number(el.dataset.col), string: Number(el.dataset.string) };
+  }
+  function onCellPointerDown(e: React.PointerEvent, c: number, s: number, has: boolean) {
+    justDragged.current = false;
+    press.current = { col: c, string: s, x: e.clientX, y: e.clientY, has, dragging: false };
+  }
+  function onCellPointerMove(e: React.PointerEvent) {
+    const p = press.current;
+    if (!p) return;
+    if (!p.dragging) {
+      if (!p.has) return;
+      if (Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6) return;
+      p.dragging = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setDragNote({ col: p.col, string: p.string });
+    }
+    e.preventDefault();
+    setDropCell(cellAt(e.clientX, e.clientY));
+  }
+  function onCellPointerUp(e: React.PointerEvent) {
+    const p = press.current;
+    press.current = null;
+    if (p?.dragging) {
+      justDragged.current = true;
+      // The synthetic click right after the drop is suppressed; clear the flag afterwards.
+      setTimeout(() => {
+        justDragged.current = false;
+      }, 350);
+      const target = cellAt(e.clientX, e.clientY);
+      if (target) onChange(moveNote(tab, p.col, p.string, target.col, target.string));
+      setDragNote(null);
+      setDropCell(null);
+    }
   }
 
   const activeNote = active
@@ -200,17 +244,37 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
             {ROWS.map((s) => {
               const note = col.notes.find((n) => n.string === s);
               const isActive = active?.col === c && active?.string === s;
+              const isDropCell = dropCell?.col === c && dropCell?.string === s;
+              const isDragSrc = dragNote?.col === c && dragNote?.string === s;
               return (
                 <button
                   key={s}
                   type="button"
+                  data-cell
+                  data-col={c}
+                  data-string={s}
                   aria-label={`string-${s}-col-${c}`}
-                  onClick={() => selectCell(c, s)}
+                  onPointerDown={(e) => onCellPointerDown(e, c, s, !!note)}
+                  onPointerMove={onCellPointerMove}
+                  onPointerUp={onCellPointerUp}
+                  onPointerCancel={onCellPointerUp}
+                  onClick={() => {
+                    if (justDragged.current) {
+                      justDragged.current = false;
+                      return;
+                    }
+                    selectCell(c, s);
+                  }}
+                  style={note ? { touchAction: "none" } : undefined}
                   className={`relative flex h-8 w-9 items-center justify-center text-sm tabular-nums transition-colors ${
+                    note ? "cursor-grab active:cursor-grabbing" : ""
+                  } ${
                     isActive
                       ? "rounded bg-accent font-medium text-paper-raised"
-                      : "text-ink hover:bg-paper-raised"
-                  }`}
+                      : isDropCell
+                        ? "rounded ring-2 ring-accent ring-inset text-ink"
+                        : "text-ink hover:bg-paper-raised"
+                  } ${isDragSrc ? "opacity-30" : ""}`}
                 >
                   {/* Line crossing the string */}
                   {!isActive && (

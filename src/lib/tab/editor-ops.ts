@@ -17,6 +17,40 @@ export function moveColumn(cols: Column[], from: number, to: number): Column[] {
   return next;
 }
 
+/**
+ * Drag a single note (fret + articulation) to another cell.
+ * If the target string is already taken in that column, a fresh column is inserted there
+ * so the existing note is pushed aside instead of overwritten.
+ */
+export function moveNote(
+  cols: Column[],
+  fromCol: number,
+  fromString: number,
+  toCol: number,
+  toString: number,
+): Column[] {
+  if (toCol < 0 || toCol >= cols.length) return cols;
+  if (fromCol === toCol && fromString === toString) return cols;
+  const src = cols[fromCol]?.notes.find((n) => n.string === fromString);
+  if (!src) return cols;
+  const moved: Note = { ...src, string: toString };
+
+  // Remove the note from its source cell (column indices are unchanged).
+  const without = cols.map((col, i) =>
+    i === fromCol ? { notes: col.notes.filter((n) => n.string !== fromString) } : col,
+  );
+
+  if (without[toCol].notes.some((n) => n.string === toString)) {
+    // Collision → insert a new column at toCol; existing content shifts right.
+    return [...without.slice(0, toCol), { notes: [moved] }, ...without.slice(toCol)];
+  }
+  return without.map((col, i) =>
+    i === toCol
+      ? { notes: [...col.notes, moved].sort((a, b) => a.string - b.string) }
+      : col,
+  );
+}
+
 export function setNote(cols: Column[], colIndex: number, note: Note): Column[] {
   return cols.map((col, i) => {
     if (i !== colIndex) return col;
