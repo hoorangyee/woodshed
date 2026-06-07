@@ -21,7 +21,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
 
   const lickIds = await socialRepo.collections.itemLickIds(id);
   const raw = await Promise.all(lickIds.map((lid) => licksRepo.get(lid)));
-  // 표시 가능한 릭만: (공개/링크공유) 그리고 (숨김 아님) — 단, 내가 소유한 릭은 항상 표시
+  // Show only displayable licks: (public/unlisted) and (not hidden) — but always show licks I own
   const items = raw.filter((l): l is LickRecord => {
     if (!l) return false;
     const ownLick = !!user && l.ownerId === user.id;

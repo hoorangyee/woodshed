@@ -2,8 +2,8 @@ import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
 /**
- * 엣지 안전(edge-safe) 설정. 미들웨어에서 JWT 검증에만 사용하며
- * DB 어댑터·Credentials는 포함하지 않는다(노드 전용 auth.ts에서 추가).
+ * Edge-safe config. Used by middleware for JWT verification only;
+ * it omits the DB adapter and Credentials (added in the node-only auth.ts).
  */
 export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },

@@ -12,10 +12,10 @@ interface Props {
   onChange: (next: Column[]) => void;
 }
 
-// 위→아래 표시 순서의 줄 인덱스 (고음 e=5 가 맨 위)
+// String indices in top-to-bottom display order (high e=5 on top)
 const ROWS = Array.from({ length: STRING_COUNT }, (_, i) => STRING_COUNT - 1 - i);
 
-// 주법 툴바 버튼 (라벨은 사전 키로 참조)
+// Articulation toolbar buttons (labels referenced by dictionary key)
 const TOOLS: { artic: Articulation; glyph: string; labelKey: keyof Dict }[] = [
   { artic: "h", glyph: "h", labelKey: "hammerOn" },
   { artic: "p", glyph: "p", labelKey: "pullOff" },
@@ -29,9 +29,9 @@ const TOOLS: { artic: Articulation; glyph: string; labelKey: keyof Dict }[] = [
 export function TabEditor({ tab, tuning, onChange }: Props) {
   const { t } = useI18n();
   const [active, setActive] = useState<{ col: number; string: number } | null>(null);
-  // 직전에 누른 숫자들(두 자리 프렛 입력용 윈도). 셀 표시는 항상 실제 note 값을 따른다.
+  // Recently pressed digits (window for two-digit frets). The cell always shows the real note value.
   const [buffer, setBuffer] = useState("");
-  // 숨겨진 입력: 칸을 탭하면 포커스를 줘서 OS 숫자 키패드를 띄운다.
+  // Hidden input: focusing it on a cell tap brings up the OS numeric keypad.
   const inputRef = useRef<HTMLInputElement>(null);
 
   const activeNote = active
@@ -45,11 +45,11 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   function selectCell(col: number, string: number) {
     setActive({ col, string });
     setBuffer("");
-    // 사용자 제스처(탭) 안에서 동기적으로 포커스 → 모바일 키패드 표시
+    // Focus synchronously within the user gesture (tap) → shows the mobile keypad
     focusInput();
   }
 
-  // 숫자 한 자리를 활성 음에 즉시 반영(두 자리 윈도로 10~24 지원). 키보드/키패드 공용.
+  // Apply a single digit to the active note immediately (two-digit window supports 10-24). Shared by keyboard/keypad.
   function commitDigit(col: number, string: number, digit: string) {
     const nextBuf = (buffer + digit).slice(-2);
     const fret = Math.min(24, parseInt(nextBuf, 10));
@@ -58,7 +58,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     onChange(setNote(tab, col, { string, fret, artic: existing?.artic }));
   }
 
-  // 물리 키보드(데스크톱): 숫자/주법/삭제 처리
+  // Physical keyboard (desktop): handle digits/articulations/delete
   function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
     if (!active) return;
     const { col, string } = active;
@@ -81,7 +81,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     }
   }
 
-  // 모바일 소프트 키패드: keydown이 불안정하므로 입력 이벤트로 숫자/삭제를 잡는다.
+  // Mobile soft keypad: keydown is unreliable, so capture digits/deletes via the input event.
   function handleInput(e: React.FormEvent<HTMLInputElement>) {
     const el = e.currentTarget;
     if (!active) {
@@ -103,7 +103,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     el.value = "";
   }
 
-  // 툴바: 활성 음에 주법 토글
+  // Toolbar: toggle an articulation on the active note
   function applyArtic(artic: Articulation) {
     if (!active || !activeNote) return;
     onChange(toggleArtic(tab, active.col, active.string, artic));
@@ -119,7 +119,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* OS 숫자 키패드를 띄우기 위한 숨김 입력 (fontSize 16 → iOS 줌 방지) */}
+      {/* Hidden input to summon the OS numeric keypad (fontSize 16 → prevents iOS zoom) */}
       <input
         ref={inputRef}
         type="text"
@@ -135,7 +135,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
       />
 
       <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
-        {/* 줄 라벨 */}
+        {/* String labels */}
         <div className="flex flex-col pr-1 text-sm font-medium text-ink-soft">
           {ROWS.map((s) => (
             <span key={s} className="flex h-8 items-center">
@@ -161,7 +161,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
                       : "text-ink hover:bg-paper-raised"
                   }`}
                 >
-                  {/* 현(줄)을 가로지르는 라인 */}
+                  {/* Line crossing the string */}
                   {!isActive && (
                     <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-rule" />
                   )}
@@ -196,7 +196,7 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
         </button>
       </div>
 
-      {/* 주법 툴바 */}
+      {/* Articulation toolbar */}
       <div className="rounded-lg border border-rule bg-paper-raised p-2">
         <div className="mb-1.5 flex items-center gap-2 px-1">
           <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">

@@ -1,11 +1,11 @@
-// b = 풀 벤딩(온음), b½ = 하프 벤딩(반음)
+// b = full bend (whole step), b½ = half bend (half step)
 export type Articulation = "h" | "p" | "/" | "\\" | "b" | "b½" | "~";
 export const ARTICULATIONS: Articulation[] = ["h", "p", "/", "\\", "b", "b½", "~"];
-// 단일 키로 토글되는 주법(벤딩은 b 키로 별도 순환 처리)
+// Articulations toggled by a single key (bends are cycled separately via the b key)
 export const TOGGLE_KEYS: Articulation[] = ["h", "p", "/", "\\", "~"];
 
 export interface Note {
-  string: number; // 0 = 저음 E ... 5 = 고음 e
+  string: number; // 0 = low E ... 5 = high e
   fret: number;   // 0..24
   artic?: Articulation;
 }
@@ -17,7 +17,7 @@ export interface Column {
 export interface Lick {
   id: string;
   title: string;
-  tuning: string[]; // 길이 6, index 0 = 저음
+  tuning: string[]; // length 6, index 0 = lowest string
   tab: Column[];
   memo: string;
   source: string;

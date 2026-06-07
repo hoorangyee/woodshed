@@ -38,7 +38,7 @@ export async function updateLick(id: string, formData: FormData) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const lick = await licksRepo.get(id);
-  if (!lick || lick.ownerId !== user.id) redirect("/"); // 비소유자 차단
+  if (!lick || lick.ownerId !== user.id) redirect("/"); // block non-owners
   const input = parsePayload(formData);
   await licksRepo.update(id, input);
   revalidatePath("/");
@@ -50,7 +50,7 @@ export async function deleteLick(id: string) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const lick = await licksRepo.get(id);
-  if (!lick || lick.ownerId !== user.id) redirect("/"); // 비소유자 차단
+  if (!lick || lick.ownerId !== user.id) redirect("/"); // block non-owners
   await licksRepo.remove(id);
   revalidatePath("/");
   redirect("/");

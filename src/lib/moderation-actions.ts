@@ -7,7 +7,7 @@ import { currentUser, isAdmin } from "@/lib/auth/current-user";
 
 const reasonSchema = z.string().trim().min(1).max(300);
 
-/** 신고 생성. 성공 여부 반환(클라이언트 피드백용). */
+/** Create a report. Returns success for client feedback. */
 export async function reportContent(
   targetType: TargetType,
   targetId: string,
@@ -17,7 +17,7 @@ export async function reportContent(
   if (!user) redirect("/login");
   const parsed = reasonSchema.safeParse(reason);
   if (!parsed.success) return false;
-  // 중복 방지: 같은 대상에 이미 미처리 신고가 있으면 멱등 처리
+  // Dedup: if an open report on this target already exists, treat as idempotent
   if (await moderationRepo.hasOpenReport(user.id, targetType, targetId)) return true;
   await moderationRepo.createReport({
     targetType,
@@ -28,7 +28,7 @@ export async function reportContent(
   return true;
 }
 
-/* ── 관리자 모더레이션 ──────────────────────────────────── */
+/* ── Admin moderation ──────────────────────────────────── */
 export async function adminHideLick(id: string, hidden: boolean) {
   if (!isAdmin(await currentUser())) redirect("/");
   await moderationRepo.hideLick(id, hidden);

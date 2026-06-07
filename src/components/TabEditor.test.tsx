@@ -14,7 +14,7 @@ describe("TabEditor", () => {
   it("adds a column when '+' is clicked", async () => {
     const user = userEvent.setup();
     render(<Harness />);
-    // 초기 1칸 → 셀 버튼 6개(6줄). + 누르면 12개.
+    // Starts with 1 column → 6 cell buttons (6 strings). After '+', 12.
     await user.click(screen.getByRole("button", { name: "Add column" }));
     const cells = screen.getAllByRole("button", { name: /^string-\d-col-\d$/ });
     expect(cells.length).toBe(12);
@@ -37,7 +37,7 @@ describe("TabEditor", () => {
     const cell = screen.getByRole("button", { name: "string-2-col-0" });
     await user.click(cell);
     await user.keyboard("7");
-    // Enter 없이도 셀에 즉시 반영되어야 한다
+    // Should appear in the cell immediately, even without Enter
     expect(cell).toHaveTextContent("7");
   });
 
@@ -56,7 +56,7 @@ describe("TabEditor", () => {
     const cell = screen.getByRole("button", { name: "string-2-col-0" });
     await user.click(cell);
     await user.keyboard("7");
-    // 음을 만들기 전에는 비활성, 만든 뒤 클릭하면 적용된다
+    // Disabled before a note exists; clicking after creating one applies it
     const vibrato = screen.getByRole("button", { name: "Vibrato" });
     expect(vibrato).toBeEnabled();
     await user.click(vibrato);
@@ -84,7 +84,7 @@ describe("TabEditor", () => {
     const cell = screen.getByRole("button", { name: "string-2-col-0" });
     await user.click(cell);
     const input = screen.getByLabelText("Fret number input") as HTMLInputElement;
-    // 모바일 소프트 키패드는 input 이벤트로 들어온다
+    // Mobile soft keypads arrive via the input event
     fireEvent.input(input, { target: { value: "9" } });
     expect(cell).toHaveTextContent("9");
   });

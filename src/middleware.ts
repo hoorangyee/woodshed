@@ -8,8 +8,8 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isAuthed = !!req.auth;
 
-  // 개별 릭 보기(/licks/<id>)는 공개/unlisted 열람을 위해 비로그인 허용.
-  // 단, /licks/new 와 .../edit 은 편집이므로 보호.
+  // A single lick view (/licks/<id>) is allowed without login so public/unlisted licks are readable.
+  // But /licks/new and .../edit are editing routes, so they stay protected.
   const isLickView = /^\/licks\/[^/]+$/.test(pathname) && pathname !== "/licks/new";
   const isPublic =
     pathname.startsWith("/api/auth") ||
@@ -20,7 +20,7 @@ export default auth((req) => {
 
   if (!isAuthed && !isPublic) {
     const url = req.nextUrl.clone();
-    // 비로그인 방문자는 루트 대신 공개 탐색 페이지로 안내
+    // Send logged-out visitors to the public explore page instead of the root.
     url.pathname = pathname === "/" ? "/explore" : "/login";
     return NextResponse.redirect(url);
   }

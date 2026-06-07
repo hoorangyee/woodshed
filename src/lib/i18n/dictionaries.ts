@@ -2,7 +2,7 @@ export type Locale = "en" | "ko";
 export const LOCALES: Locale[] = ["en", "ko"];
 export const defaultLocale: Locale = "en";
 
-// 모든 UI 문자열. en/ko 동일 구조 유지.
+// All UI strings. Keep en/ko in the same shape.
 const en = {
   localeLabel: { en: "EN", ko: "한국어" },
 

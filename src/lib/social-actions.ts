@@ -7,7 +7,7 @@ import { licksRepo } from "@/lib/db/licks";
 import { currentUser } from "@/lib/auth/current-user";
 import type { Visibility } from "@/lib/db/schema";
 
-/* ── 좋아요 ─────────────────────────────────────────────── */
+/* ── Likes ─────────────────────────────────────────────── */
 export async function toggleLike(lickId: string): Promise<{ liked: boolean; count: number }> {
   const user = await currentUser();
   if (!user) redirect("/login");
@@ -17,10 +17,10 @@ export async function toggleLike(lickId: string): Promise<{ liked: boolean; coun
   return { liked, count };
 }
 
-/* ── 댓글 ───────────────────────────────────────────────── */
+/* ── Comments ───────────────────────────────────────────────── */
 const commentSchema = z.string().trim().min(1).max(1000);
 
-const COMMENT_RATE_LIMIT = 5; // 분당 최대 댓글 수
+const COMMENT_RATE_LIMIT = 5; // max comments per minute
 const COMMENT_WINDOW_MS = 60_000;
 
 export async function addComment(lickId: string, formData: FormData) {
@@ -28,7 +28,7 @@ export async function addComment(lickId: string, formData: FormData) {
   if (!user) redirect("/login");
   const parsed = commentSchema.safeParse(formData.get("body"));
   if (!parsed.success) return;
-  // 레이트리밋: 1분에 5개 초과면 무시
+  // Rate limit: drop if more than 5 in the last minute
   const recent = await socialRepo.comments.recentCountByUser(user.id, Date.now() - COMMENT_WINDOW_MS);
   if (recent >= COMMENT_RATE_LIMIT) return;
   await socialRepo.comments.add(lickId, user.id, parsed.data);
@@ -41,13 +41,13 @@ export async function deleteComment(commentId: string, lickId: string) {
   const c = await socialRepo.comments.get(commentId);
   if (!c) return;
   const lick = await licksRepo.get(lickId);
-  // 댓글 작성자 또는 릭 소유자만 삭제 가능
+  // Only the comment author or the lick owner may delete
   if (c.userId !== user.id && lick?.ownerId !== user.id) return;
   await socialRepo.comments.remove(commentId);
   revalidatePath(`/licks/${lickId}`);
 }
 
-/* ── 컬렉션 ─────────────────────────────────────────────── */
+/* ── Collections ─────────────────────────────────────────────── */
 const titleSchema = z.string().trim().min(1).max(100);
 
 export async function createCollection(formData: FormData) {
@@ -71,7 +71,7 @@ export async function deleteCollection(id: string) {
   redirect("/collections");
 }
 
-/** 컬렉션에 릭 추가/제거 토글. 새 포함 상태를 반환. */
+/** Toggle a lick in/out of a collection. Returns the new membership state. */
 export async function toggleInCollection(collectionId: string, lickId: string): Promise<boolean> {
   const user = await currentUser();
   if (!user) redirect("/login");

@@ -26,7 +26,7 @@ export function LikeButton({
       router.push("/login");
       return;
     }
-    // 낙관적 업데이트
+    // optimistic update
     setLiked((v) => !v);
     setCount((c) => c + (liked ? -1 : 1));
     startTransition(async () => {

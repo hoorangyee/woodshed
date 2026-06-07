@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 에디토리얼한 노트 느낌을 주는 serif (워드마크/제목용)
+// Editorial serif for the wordmark and headings
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],

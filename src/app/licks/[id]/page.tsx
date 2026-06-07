@@ -24,9 +24,9 @@ export default async function LickDetail({ params }: { params: Promise<{ id: str
 
   const isOwner = !!user && user.id === lick.ownerId;
   const admin = isAdmin(user);
-  // 비공개 릭은 소유자만 열람 가능
+  // Private licks are viewable by the owner only
   if (lick.visibility === "private" && !isOwner) notFound();
-  // 모더레이터가 숨긴 릭은 소유자·관리자만 열람
+  // Moderator-hidden licks are viewable only by the owner or an admin
   if (lick.hidden && !isOwner && !admin) notFound();
 
   const [author, likeCount, liked, comments] = await Promise.all([

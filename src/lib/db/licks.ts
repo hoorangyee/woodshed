@@ -71,7 +71,7 @@ export function makeLicksRepo(db: DB) {
     return rows.map((r) => r.name);
   }
 
-  /** 여러 릭의 태그를 한 번에 조회(N+1 방지). */
+  /** Load tags for many licks in one query (avoids N+1). */
   async function tagsForMany(lickIds: string[]): Promise<Map<string, string[]>> {
     const map = new Map<string, string[]>();
     if (lickIds.length === 0) return map;
@@ -109,7 +109,7 @@ export function makeLicksRepo(db: DB) {
     return mapRow(row, await tagsFor(row.id));
   }
 
-  /** 제목·메모·태그를 대상으로 한 키워드 매칭(대소문자 무시). */
+  /** Case-insensitive keyword match across title, memo, and tags. */
   function matchesQuery(r: LickRecord, q: string): boolean {
     return (
       r.title.toLowerCase().includes(q) ||
@@ -166,7 +166,7 @@ export function makeLicksRepo(db: DB) {
         .where(conditions.length ? and(...conditions) : undefined);
       const tagMap = await tagsForMany(rows.map((r) => r.id));
       const records = rows.map((r) => mapRow(r, tagMap.get(r.id) ?? []));
-      // 키워드 검색은 제목·메모·태그 전체를 대상으로(JS에서 일괄 매칭)
+      // Keyword search covers title/memo/tags (filtered in JS)
       const q = filter.q?.toLowerCase();
       const filtered = q ? records.filter((r) => matchesQuery(r, q)) : records;
       return filtered.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -196,7 +196,7 @@ export function makeLicksRepo(db: DB) {
       await db.delete(licks).where(eq(licks.id, id));
     },
 
-    /** 소유자 미지정 레거시 릭을 운영자 계정으로 일괄 귀속(1회성 마이그레이션). */
+    /** Assign owner-less legacy licks to the operator account (one-time migration). */
     async claimOrphans(ownerId: string): Promise<number> {
       const orphans = await db.select({ id: licks.id }).from(licks).where(isNull(licks.ownerId));
       if (orphans.length === 0) return 0;
@@ -204,7 +204,7 @@ export function makeLicksRepo(db: DB) {
       return orphans.length;
     },
 
-    /** 공개(public) 릭 피드. ownerId 지정 시 해당 사용자의 공개 릭만(프로필용). 최신순. */
+    /** Public lick feed. With ownerId, only that user's public licks (for profiles). Newest first. */
     async listPublic(filter: { q?: string; tag?: string; ownerId?: string }): Promise<LickWithAuthor[]> {
       let ids: string[] | null = null;
       if (filter.tag) {
@@ -258,7 +258,7 @@ export function makeLicksRepo(db: DB) {
       return rows[0] ?? null;
     },
 
-    /** 공개 릭에 쓰인 태그(Explore 필터용). */
+    /** Tags used by public licks (for the Explore filter). */
     async publicTags(): Promise<string[]> {
       const rows = await db
         .selectDistinct({ name: tags.name })

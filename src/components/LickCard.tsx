@@ -3,7 +3,7 @@ import { TabStaff } from "./TabStaff";
 import type { LickRecord } from "@/lib/db/licks";
 import type { Dict } from "@/lib/i18n/dictionaries";
 
-/** 노트의 한 줄(엔트리)처럼 보이는 릭 행. authorHandle 지정 시 작성자 표기(탐색/프로필). */
+/** A lick row styled like a notebook entry. Shows the author when authorHandle is given (explore/profile). */
 export function LickCard({
   lick,
   t,

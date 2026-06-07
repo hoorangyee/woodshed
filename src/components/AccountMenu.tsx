@@ -2,7 +2,7 @@ import { signOut } from "@/lib/auth/auth";
 import type { CurrentUser } from "@/lib/auth/current-user";
 import type { Dict } from "@/lib/i18n/dictionaries";
 
-/** 로그인 사용자의 아바타 + 핸들 + 로그아웃. */
+/** Signed-in user's avatar + handle + sign out. */
 export function AccountMenu({ user, t }: { user: CurrentUser; t: Dict }) {
   return (
     <div className="flex items-center gap-2 rounded-full border border-rule bg-paper-raised p-1">

@@ -12,7 +12,7 @@ export default async function EditLickPage({ params }: { params: Promise<{ id: s
   const t = getDictionary(await getLocale());
   const user = await requireUser();
   const lick = await licksRepo.get(id);
-  if (!lick || lick.ownerId !== user.id) notFound(); // 비소유자 편집 차단
+  if (!lick || lick.ownerId !== user.id) notFound(); // block non-owners from editing
   const action = updateLick.bind(null, id);
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">

@@ -3,7 +3,7 @@ import { defaultLocale, type Locale } from "./dictionaries";
 
 export const LOCALE_COOKIE = "locale";
 
-/** 서버 전용: 쿠키에서 로케일을 읽는다. 기본값은 영어. */
+/** Server-only: reads the locale from the cookie. Defaults to English. */
 export async function getLocale(): Promise<Locale> {
   const value = (await cookies()).get(LOCALE_COOKIE)?.value;
   return value === "ko" || value === "en" ? value : defaultLocale;

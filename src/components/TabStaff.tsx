@@ -1,6 +1,6 @@
 import { STRING_COUNT, type Column, type Articulation } from "@/lib/tab/types";
 
-// 칩 위 작은 글자로 표기하는 주법(슬라이드=사선, 벤딩=곡선화살표, 비브라토=물결선은 별도)
+// Articulations shown as small glyphs on the chip (slide=diagonal, bend=curved arrow; vibrato=wavy line handled separately)
 const ARTIC_GLYPH: Partial<Record<Articulation, string>> = {
   h: "h",
   p: "p",
@@ -9,23 +9,23 @@ const ARTIC_GLYPH: Partial<Record<Articulation, string>> = {
 const SLIDES = new Set<Articulation>(["/", "\\"]);
 const BENDS = new Set<Articulation>(["b", "b½"]);
 
-// 위→아래 표시 순서 (고음 e=5 가 맨 위)
+// Top-to-bottom display order (high e=5 on top)
 const ROWS = Array.from({ length: STRING_COUNT }, (_, i) => STRING_COUNT - 1 - i);
 
 interface Props {
   tab: Column[];
   tuning: string[];
-  /** 컨테이너/칩 배경(괘선을 칩 뒤로 가리기 위해 둘이 같아야 함) */
+  /** Container/chip background (must match so the staff line hides behind chips) */
   surface?: string;
   compact?: boolean;
 }
 
-/** 위로 향하는 화살촉 폴리곤 좌표 */
+/** Polygon points for an upward arrowhead */
 function upArrowhead(x: number, yTip: number, size: number): string {
   return `${x},${yTip} ${x - size},${yTip + size * 1.5} ${x + size},${yTip + size * 1.5}`;
 }
 
-/** 음 위 물결선(비브라토) path */
+/** Wavy-line (vibrato) path above a note */
 function wavyPath(cx: number, y: number, width: number, amp: number, wl: number): string {
   const startX = cx - width / 2;
   const segs = Math.max(2, Math.round(width / wl));
@@ -41,18 +41,18 @@ function wavyPath(cx: number, y: number, width: number, amp: number, wl: number)
 }
 
 /**
- * TAB를 그래픽 보표로 렌더한다. 6개의 현 라인 위에 프렛 칩을 얹고,
- * 슬라이드는 음 사이 사선, 벤딩은 곡선 화살표(풀=full / 하프=½),
- * 비브라토는 음 위 물결선으로 표기한다.
+ * Renders TAB as a graphic staff. Fret chips sit on six string lines;
+ * slides are diagonals between notes, bends are curved arrows (full / ½),
+ * and vibrato is a wavy line above the note.
  */
 export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = false }: Props) {
   const cols = tab.length > 0 ? tab : [{ notes: [] }];
 
-  // 좌표계 상수
+  // Coordinate-system constants
   const ROW_H = compact ? 22 : 34;
   const COL_W = compact ? 30 : 46;
   const PAD = compact ? 8 : 16;
-  const HEAD = compact ? 14 : 22; // 음 위(벤딩/비브라토) 여백
+  const HEAD = compact ? 14 : 22; // Headroom above notes (for bends/vibrato)
   const staffH = STRING_COUNT * ROW_H;
   const totalH = HEAD + staffH;
   const staffW = cols.length * COL_W;
@@ -61,7 +61,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
   const y = (s: number) => HEAD + rowIndex(s) * ROW_H + ROW_H / 2;
   const x = (c: number) => c * COL_W + COL_W / 2;
 
-  // 슬라이드 사선 계산
+  // Compute slide diagonals
   const slides: { x1: number; y1: number; x2: number; y2: number }[] = [];
   const inset = compact ? 7 : 11;
   const slant = compact ? 4 : 6;
@@ -94,7 +94,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
     }
   });
 
-  // 벤딩 곡선 화살표 + 비브라토 물결선
+  // Bend curved arrows + vibrato wavy lines
   type Bend = { path: string; head: string; label: string; lx: number; ly: number };
   const bends: Bend[] = [];
   const vibratos: string[] = [];
@@ -135,7 +135,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
 
   return (
     <div className={`flex overflow-x-auto rounded-lg ${surface}`} style={{ padding: PAD }}>
-      {/* 현 라벨 */}
+      {/* String labels */}
       {!compact && (
         <div className="mr-1 flex flex-col" style={{ height: staffH, marginTop: HEAD }}>
           {ROWS.map((s) => (
@@ -150,7 +150,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
         </div>
       )}
 
-      {/* 보표 본문 */}
+      {/* Staff body */}
       <div className="relative" style={{ width: staffW, height: totalH }}>
         <svg
           className="absolute inset-0"
@@ -159,7 +159,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
           aria-hidden="true"
           style={{ overflow: "visible" }}
         >
-          {/* 현 라인 */}
+          {/* String lines */}
           {ROWS.map((s) => (
             <line
               key={s}
@@ -171,7 +171,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
               strokeWidth={1}
             />
           ))}
-          {/* 슬라이드 사선 */}
+          {/* Slide diagonals */}
           {slides.map((l, i) => (
             <line
               key={`s${i}`}
@@ -184,7 +184,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
               strokeLinecap="round"
             />
           ))}
-          {/* 비브라토 물결선 */}
+          {/* Vibrato wavy lines */}
           {vibratos.map((d, i) => (
             <path
               key={`v${i}`}
@@ -195,7 +195,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
               strokeLinecap="round"
             />
           ))}
-          {/* 벤딩 곡선 화살표 */}
+          {/* Bend curved arrows */}
           {bends.map((b, i) => (
             <g key={`b${i}`}>
               <path
@@ -219,7 +219,7 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
           ))}
         </svg>
 
-        {/* 프렛 칩 */}
+        {/* Fret chips */}
         {cols.map((col, c) =>
           col.notes.map((note) => {
             const glyph = note.artic ? ARTIC_GLYPH[note.artic] : undefined;

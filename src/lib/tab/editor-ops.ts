@@ -38,7 +38,7 @@ export function toggleArtic(
   });
 }
 
-/** 벤딩 순환: 없음 → 풀(b) → 하프(b½) → 없음 */
+/** Cycle bend: none → full (b) → half (b½) → none */
 export function cycleBend(cols: Column[], colIndex: number, string: number): Column[] {
   const next = (artic: Articulation | undefined): Articulation | undefined =>
     artic === "b" ? "b½" : artic === "b½" ? undefined : "b";

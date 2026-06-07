@@ -46,7 +46,7 @@ export function makeSocialRepo(db: DB) {
           .limit(1);
         return rows.length > 0;
       },
-      /** 토글 후 좋아요 상태(true=좋아요됨)를 반환. */
+      /** Returns the new like state after toggling (true = liked). */
       async toggle(userId: string, lickId: string): Promise<boolean> {
         const existing = await db
           .select({ lickId: likes.lickId })
@@ -60,7 +60,7 @@ export function makeSocialRepo(db: DB) {
         await db.insert(likes).values({ userId, lickId, createdAt: Date.now() });
         return true;
       },
-      /** 여러 릭의 좋아요 수(카드 표시용). */
+      /** Like counts for many licks (for card display). */
       async countsFor(lickIds: string[]): Promise<Record<string, number>> {
         if (lickIds.length === 0) return {};
         const rows = await db
@@ -95,7 +95,7 @@ export function makeSocialRepo(db: DB) {
         await db.insert(comments).values({ id, lickId, userId, body, createdAt: Date.now() });
         return id;
       },
-      /** 여러 릭의 (숨김 제외) 댓글 수. 정렬·카드 표시용. */
+      /** Comment counts for many licks (excluding hidden). For sorting/cards. */
       async countsFor(lickIds: string[]): Promise<Record<string, number>> {
         if (lickIds.length === 0) return {};
         const rows = await db
@@ -105,7 +105,7 @@ export function makeSocialRepo(db: DB) {
           .groupBy(comments.lickId);
         return Object.fromEntries(rows.map((r) => [r.lickId, Number(r.c)]));
       },
-      /** 레이트리밋용: sinceMs 이후 해당 사용자의 댓글 수. */
+      /** For rate limiting: the user's comment count since sinceMs. */
       async recentCountByUser(userId: string, sinceMs: number): Promise<number> {
         const rows = await db
           .select({ c: sql<number>`count(*)` })
@@ -175,7 +175,7 @@ export function makeSocialRepo(db: DB) {
         }));
       },
 
-      /** 컬렉션에 담긴 릭 id를 순서대로 반환. */
+      /** Returns the lick ids in a collection, in order. */
       async itemLickIds(collectionId: string): Promise<string[]> {
         const rows = await db
           .select({ lickId: collectionItems.lickId })
@@ -216,7 +216,7 @@ export function makeSocialRepo(db: DB) {
         await db.delete(collections).where(eq(collections.id, id));
       },
 
-      /** 소유자의 컬렉션 중 특정 릭을 담고 있는 컬렉션 id 집합(추가 UI용). */
+      /** Among the owner's collections, the ids that contain a given lick (for the add UI). */
       async collectionIdsContaining(ownerId: string, lickId: string): Promise<string[]> {
         const rows = await db
           .select({ id: collections.id })

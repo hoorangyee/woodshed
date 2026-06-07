@@ -36,7 +36,7 @@ export default async function ExplorePage({
     likeCount: likeCounts[l.id] ?? 0,
     commentCount: commentCounts[l.id] ?? 0,
   }));
-  // listPublic은 최신순. 좋아요/댓글순은 카운트로 재정렬(동점은 최신순).
+  // listPublic is newest-first; re-sort by counts for likes/comments (ties broken by recency).
   if (sortKey === "likes") {
     licks.sort((a, b) => b.likeCount - a.likeCount || b.createdAt - a.createdAt);
   } else if (sortKey === "comments") {

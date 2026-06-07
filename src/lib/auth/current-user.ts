@@ -18,14 +18,14 @@ const ADMIN_EMAILS = (process.env.AUTH_ADMIN_EMAILS ?? "")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
-/** 관리자 여부: role='admin' 또는 AUTH_ADMIN_EMAILS 허용목록. */
+/** Admin check: role='admin' or in the AUTH_ADMIN_EMAILS allowlist. */
 export function isAdmin(user: Pick<CurrentUser, "role" | "email"> | null): boolean {
   if (!user) return false;
   if (user.role === "admin") return true;
   return !!user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
 }
 
-/** 현재 세션 사용자의 DB 레코드(핸들·role 포함). 미로그인이면 null. */
+/** The session user's DB record (incl. handle, role). null if not signed in. */
 export async function currentUser(): Promise<CurrentUser | null> {
   const session = await auth();
   const id = session?.user?.id;
@@ -45,7 +45,7 @@ export async function currentUser(): Promise<CurrentUser | null> {
   return rows[0] ?? null;
 }
 
-/** 로그인 + 핸들 온보딩을 강제. 미로그인→/login, 핸들 미설정→/onboarding. */
+/** Require sign-in + handle onboarding. No session → /login; no handle → /onboarding. */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await currentUser();
   if (!user) redirect("/login");
@@ -53,7 +53,7 @@ export async function requireUser(): Promise<CurrentUser> {
   return user;
 }
 
-/** 관리자 전용. 비관리자는 홈으로. */
+/** Admin only. Non-admins are redirected home. */
 export async function requireAdmin(): Promise<CurrentUser> {
   const user = await currentUser();
   if (!isAdmin(user)) redirect("/");

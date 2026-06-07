@@ -78,7 +78,7 @@ describe("collections", () => {
 
     await repo.collections.addLick(cid, L);
     await repo.collections.addLick(cid, L2);
-    await repo.collections.addLick(cid, L); // 중복 무시
+    await repo.collections.addLick(cid, L); // duplicate ignored
     expect(await repo.collections.itemLickIds(cid)).toEqual([L, L2]);
     expect((await repo.collections.get(cid))?.itemCount).toBe(2);
     expect(await repo.collections.collectionIdsContaining(A, L)).toContain(cid);

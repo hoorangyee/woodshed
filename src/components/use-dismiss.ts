@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, type RefObject } from "react";
 
-/** 팝오버 닫기: Escape 키 또는 바깥 클릭 시 onClose 호출. open일 때만 활성. */
+/** Dismiss a popover: calls onClose on Escape or outside click. Active only when open. */
 export function useDismiss(
   open: boolean,
   onClose: () => void,

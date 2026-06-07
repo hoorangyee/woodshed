@@ -8,14 +8,14 @@ import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
 
 const providers = [...authConfig.providers];
 
-// 개발 전용 모의 로그인: AUTH_DEV_LOGIN=1 이고 비프로덕션일 때만 노출.
-// OAuth 자격증명 없이 소유권·visibility·온보딩 전체 플로우를 검증하기 위함.
+// Dev-only mock login: exposed only when AUTH_DEV_LOGIN=1 and not in production.
+// Lets us verify ownership/visibility/onboarding end to end without OAuth credentials.
 if (process.env.AUTH_DEV_LOGIN === "1" && process.env.NODE_ENV !== "production") {
   providers.push(
     Credentials({
       id: "dev",
       name: "Dev Login",
-      credentials: { name: { label: "이름", type: "text" } },
+      credentials: { name: { label: "Name", type: "text" } },
       async authorize(creds) {
         const name = String(creds?.name ?? "").trim() || "Dev User";
         const email = `${name.toLowerCase().replace(/\s+/g, "-")}@dev.local`;

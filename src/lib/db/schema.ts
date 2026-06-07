@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
-/* ── Auth.js (next-auth) 표준 테이블 + 커스텀 handle ───────────── */
+/* ── Auth.js (next-auth) standard tables + custom handle ───────────── */
 export const users = sqliteTable("user", {
   id: text("id")
     .primaryKey()
@@ -10,7 +10,7 @@ export const users = sqliteTable("user", {
   email: text("email").unique(),
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
   image: text("image"),
-  // 커뮤니티용 고유 핸들(프로필 URL·작성자 표기). 최초 로그인 후 온보딩에서 설정.
+  // Unique community handle (profile URL, author label). Set during onboarding after first login.
   handle: text("handle").unique(),
   role: text("role").notNull().default("user"), // user | admin
   createdAt: integer("created_at"),
@@ -54,16 +54,16 @@ export const verificationTokens = sqliteTable(
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 
-/* ── 도메인 테이블 ─────────────────────────────────────────────── */
+/* ── Domain tables ─────────────────────────────────────────────── */
 export const licks = sqliteTable(
   "licks",
   {
     id: text("id").primaryKey(),
-    // 소유자(초기 nullable → 마이그레이션 후 채움). null = 레거시 미귀속.
+    // Owner (nullable initially → filled by migration). null = unassigned legacy.
     ownerId: text("owner_id").references(() => users.id, { onDelete: "cascade" }),
-    // 공개 범위. 기본 private(의도치 않은 공개 방지).
+    // Visibility. Defaults to private (prevents accidental exposure).
     visibility: text("visibility").notNull().default("private"),
-    hidden: integer("hidden").notNull().default(0), // 모더레이터 숨김(0/1)
+    hidden: integer("hidden").notNull().default(0), // moderator-hidden (0/1)
     title: text("title").notNull(),
     tuning: text("tuning").notNull(), // JSON string[]
     tab: text("tab").notNull(), // JSON Column[]
@@ -93,7 +93,7 @@ export const lickTags = sqliteTable(
   (t) => [primaryKey({ columns: [t.lickId, t.tagId] })],
 );
 
-/* ── 소셜(SP3): 좋아요 · 댓글 · 컬렉션 ─────────────────────────── */
+/* ── Social (SP3): likes · comments · collections ─────────────────────────── */
 export const likes = sqliteTable(
   "likes",
   {
@@ -119,7 +119,7 @@ export const comments = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     body: text("body").notNull(),
-    hidden: integer("hidden").notNull().default(0), // 모더레이터 숨김(0/1)
+    hidden: integer("hidden").notNull().default(0), // moderator-hidden (0/1)
     createdAt: integer("created_at").notNull(),
   },
   (t) => [index("comments_lick_idx").on(t.lickId)],

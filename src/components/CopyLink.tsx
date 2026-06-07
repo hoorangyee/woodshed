@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-/** 현재 페이지(또는 지정 경로) URL을 클립보드에 복사. */
+/** Copy the current page (or given path) URL to the clipboard. */
 export function CopyLink({ path }: { path?: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);

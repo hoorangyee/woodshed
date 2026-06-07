@@ -37,7 +37,7 @@ export default async function LoginPage() {
             }}
             className="mt-4 space-y-2 rounded-lg border border-dashed border-rule p-3"
           >
-            <p className="text-xs text-ink-faint">개발 전용 로그인 (이름으로 가짜 계정 생성)</p>
+            <p className="text-xs text-ink-faint">Dev-only login (creates a fake account by name)</p>
             <input name="name" placeholder="Dev User" className={inputBase} />
             <button className={`${btnGhost} w-full justify-center`}>Dev Login</button>
           </form>

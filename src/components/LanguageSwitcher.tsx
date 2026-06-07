@@ -12,7 +12,7 @@ export function LanguageSwitcher() {
 
   function pick(next: Locale) {
     if (next === locale) return;
-    // 즉시 클라이언트 쿠키도 기록 → 바로 다른 페이지로 이동해도 유실되지 않음(의도된 전역 부수효과)
+    // Also write the cookie client-side immediately so it isn't lost on an instant navigation (intentional global side effect)
     // eslint-disable-next-line react-hooks/immutability
     document.cookie = `locale=${next};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
     startTransition(async () => {

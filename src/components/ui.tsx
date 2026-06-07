@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
 
-/* Studio Notebook 공용 스타일 토큰 (DRY) */
+/* Shared style tokens (DRY) */
 export const btnPrimary =
   "inline-flex items-center justify-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-medium text-paper-raised shadow-sm transition-colors hover:bg-accent-ink active:translate-y-px";
 
@@ -11,7 +11,7 @@ export const btnGhost =
 export const inputBase =
   "w-full rounded-md border border-rule bg-paper-raised px-3 py-2 text-ink placeholder:text-ink-faint transition-colors focus:border-accent";
 
-/** Woodshed 로고 마크 — 작은 셰드 + 라운드 사운드홀(창). em 기준으로 글자 크기에 맞춰 스케일. */
+/** Woodshed logo mark — a small shed + round soundhole (window). Scales with font-size (em). */
 export function WoodshedMark({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -32,7 +32,7 @@ export function WoodshedMark({ className = "" }: { className?: string }) {
   );
 }
 
-/** 워드마크 */
+/** Wordmark */
 export function Wordmark({ as = "h1", className = "" }: { as?: "h1" | "span"; className?: string }) {
   const Tag = as;
   return (
@@ -45,7 +45,7 @@ export function Wordmark({ as = "h1", className = "" }: { as?: "h1" | "span"; cl
   );
 }
 
-/** 액센트 밑줄이 들어간 텍스트 링크 */
+/** Text link with a dotted accent underline */
 export function InkLink({ className = "", ...props }: ComponentProps<typeof Link>) {
   return (
     <Link

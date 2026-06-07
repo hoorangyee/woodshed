@@ -37,7 +37,7 @@ export function makeModerationRepo(db: DB) {
       });
     },
 
-    /** 같은 사용자가 같은 대상에 이미 미처리 신고를 했는지(중복 방지). */
+    /** Whether this user already has an open report on this target (dedup). */
     async hasOpenReport(
       reporterId: string,
       targetType: TargetType,
@@ -95,7 +95,7 @@ export function makeModerationRepo(db: DB) {
       await db.update(comments).set({ hidden: hidden ? 1 : 0 }).where(eq(comments.id, id));
     },
 
-    /** 신고 대상의 표시용 정보(라벨/숨김여부/링크). 삭제됐으면 null. */
+    /** Display info for a report target (label/hidden/href). null if deleted. */
     async getTargetInfo(
       targetType: TargetType,
       targetId: string,
