@@ -5,29 +5,39 @@ export function TagFilter({ tags }: { tags: string[] }) {
   const router = useRouter();
   const params = useSearchParams();
   const active = params.get("tag");
+
   function pick(tag: string | null) {
     const next = new URLSearchParams(params.toString());
     if (tag) next.set("tag", tag);
     else next.delete("tag");
-    router.push(`/?${next.toString()}`);
+    const qs = next.toString();
+    router.push(qs ? `/?${qs}` : "/");
   }
+
+  const chip = "rounded-full px-3 py-1 text-sm transition-colors";
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="태그 필터">
       <button
         onClick={() => pick(null)}
-        className={`rounded-full px-3 py-1 text-sm ${!active ? "bg-amber-500 text-neutral-900" : "bg-neutral-800"}`}
+        aria-pressed={!active}
+        className={`${chip} ${!active ? "bg-accent text-paper-raised" : "text-ink-soft hover:bg-paper-raised hover:text-ink"}`}
       >
         전체
       </button>
-      {tags.map((t) => (
-        <button
-          key={t}
-          onClick={() => pick(t)}
-          className={`rounded-full px-3 py-1 text-sm ${active === t ? "bg-amber-500 text-neutral-900" : "bg-neutral-800"}`}
-        >
-          #{t}
-        </button>
-      ))}
+      {tags.map((t) => {
+        const on = active === t;
+        return (
+          <button
+            key={t}
+            onClick={() => pick(on ? null : t)}
+            aria-pressed={on}
+            className={`${chip} ${on ? "bg-accent text-paper-raised" : "text-ink-soft hover:bg-paper-raised hover:text-ink"}`}
+          >
+            <span className={on ? "opacity-70" : "text-ink-faint"}>#</span>
+            {t}
+          </button>
+        );
+      })}
     </div>
   );
 }

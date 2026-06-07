@@ -40,16 +40,18 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-stretch gap-2 overflow-x-auto rounded bg-neutral-900 p-2 font-mono">
-        <div className="flex flex-col py-1 text-neutral-400">
+      <div className="flex items-stretch gap-1 overflow-x-auto rounded-lg border border-rule bg-paper-sunk p-3 font-mono">
+        {/* 줄 라벨 */}
+        <div className="flex flex-col pr-1 text-sm font-medium text-ink-soft">
           {ROWS.map((s) => (
-            <span key={s} className="h-7 leading-7">
+            <span key={s} className="flex h-8 items-center">
               {tuning[s]}
             </span>
           ))}
         </div>
+
         {tab.map((col, c) => (
-          <div key={c} className="flex flex-col gap-0">
+          <div key={c} className="flex flex-col">
             {ROWS.map((s) => {
               const note = col.notes.find((n) => n.string === s);
               const isActive = active?.col === c && active?.string === s;
@@ -64,11 +66,23 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
                   }}
                   onKeyDown={(e) => handleKey(e, c, s)}
                   onBlur={() => commitFret(c, s)}
-                  className={`h-7 w-8 text-center text-sm tabular-nums ${
-                    isActive ? "bg-amber-500/30 ring-1 ring-amber-400" : "hover:bg-neutral-800"
+                  className={`relative flex h-8 w-9 items-center justify-center text-sm tabular-nums transition-colors ${
+                    isActive
+                      ? "rounded bg-accent font-medium text-paper-raised"
+                      : "text-ink hover:bg-paper-raised"
                   }`}
                 >
-                  {note ? cellToken(note) : <span className="text-neutral-600">-</span>}
+                  {/* 현(줄)을 가로지르는 라인 */}
+                  {!isActive && (
+                    <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-rule" />
+                  )}
+                  <span className="relative z-10">
+                    {note ? (
+                      cellToken(note)
+                    ) : (
+                      <span className={isActive ? "" : "text-transparent"}>·</span>
+                    )}
+                  </span>
                 </button>
               );
             })}
@@ -76,23 +90,26 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
               type="button"
               aria-label={`칸 삭제 ${c}`}
               onClick={() => onChange(removeColumn(tab, c))}
-              className="mt-1 text-xs text-neutral-500 hover:text-red-400"
+              className="mt-1.5 flex h-5 items-center justify-center text-xs text-ink-faint transition-colors hover:text-accent"
             >
               ✕
             </button>
           </div>
         ))}
+
         <button
           type="button"
           aria-label="칸 추가"
           onClick={() => onChange(addColumn(tab))}
-          className="self-center rounded bg-neutral-700 px-2 py-1 text-lg"
+          className="ml-1 flex w-9 items-center justify-center self-center rounded-md border border-dashed border-rule py-2 text-lg text-ink-soft transition-colors hover:border-accent hover:text-accent"
         >
           +
         </button>
       </div>
-      <p className="text-xs text-neutral-500">
-        칸 클릭 후 숫자 입력(0–24). 주법: h p / \ b ~ · 삭제: Backspace
+      <p className="text-xs text-ink-soft">
+        칸을 누르고 <kbd className="rounded bg-paper-sunk px-1">숫자</kbd>(0–24) 입력 · 주법{" "}
+        <kbd className="rounded bg-paper-sunk px-1">h p / \ b ~</kbd> · 지우기{" "}
+        <kbd className="rounded bg-paper-sunk px-1">Backspace</kbd>
       </p>
     </div>
   );

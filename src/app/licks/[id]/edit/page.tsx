@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { LickForm } from "@/components/LickForm";
+import { InkLink } from "@/components/ui";
 import { licksRepo } from "@/lib/db/licks";
 import { updateLick } from "../../actions";
 
@@ -9,9 +10,14 @@ export default async function EditLickPage({ params }: { params: Promise<{ id: s
   if (!lick) notFound();
   const action = updateLick.bind(null, id);
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <h1 className="mb-4 text-xl font-semibold">릭 편집</h1>
-      <LickForm initial={lick} action={action} submitLabel="수정" />
+    <main className="mx-auto max-w-3xl px-5 py-10">
+      <div className="mb-6">
+        <InkLink href={`/licks/${id}`} className="text-sm">
+          ← 돌아가기
+        </InkLink>
+        <h1 className="mt-3 font-serif text-3xl text-ink">릭 편집</h1>
+      </div>
+      <LickForm initial={lick} action={action} submitLabel="수정하기" />
     </main>
   );
 }

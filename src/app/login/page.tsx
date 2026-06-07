@@ -1,28 +1,38 @@
 "use client";
 import { useActionState } from "react";
 import { login } from "./actions";
+import { btnPrimary, inputBase } from "@/components/ui";
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, {});
   return (
-    <main className="min-h-screen grid place-items-center bg-neutral-950 text-neutral-100">
-      <form action={action} className="w-72 space-y-4">
-        <h1 className="text-xl font-semibold">Licks</h1>
-        <input
-          type="password"
-          name="password"
-          placeholder="비밀번호"
-          autoFocus
-          className="w-full rounded bg-neutral-800 px-3 py-2 outline-none"
-        />
-        {state?.error && <p className="text-sm text-red-400">{state.error}</p>}
-        <button
-          disabled={pending}
-          className="w-full rounded bg-amber-500 px-3 py-2 font-medium text-neutral-900 disabled:opacity-50"
-        >
-          {pending ? "확인 중..." : "로그인"}
-        </button>
-      </form>
+    <main className="grid min-h-screen place-items-center p-6">
+      <div className="w-full max-w-xs">
+        <div className="mb-6 text-center">
+          <h1 className="font-serif text-3xl tracking-tight text-ink">
+            <span className="text-accent">♪</span> Licks
+          </h1>
+          <p className="mt-1 text-sm text-ink-soft">기타 릭 TAB 노트</p>
+        </div>
+        <form action={action} className="space-y-3">
+          <input
+            type="password"
+            name="password"
+            placeholder="비밀번호"
+            autoFocus
+            aria-label="비밀번호"
+            className={inputBase}
+          />
+          {state?.error && (
+            <p role="alert" className="text-sm text-accent">
+              {state.error}
+            </p>
+          )}
+          <button disabled={pending} className={`${btnPrimary} w-full disabled:opacity-60`}>
+            {pending ? "확인 중…" : "들어가기"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

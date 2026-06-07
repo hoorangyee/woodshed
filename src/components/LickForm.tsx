@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TabEditor } from "./TabEditor";
 import { TabView } from "./TabView";
+import { btnPrimary, inputBase } from "./ui";
 import { STANDARD_TUNING, type Column } from "@/lib/tab/types";
 
 const TUNINGS: Record<string, string[]> = {
@@ -48,51 +49,103 @@ export function LickForm({ initial, action, submitLabel }: Props) {
     action(formData);
   }
 
-  const input = "w-full rounded bg-neutral-800 px-3 py-2 outline-none";
   return (
-    <form action={submit} className="space-y-4">
-      <input
-        className={input}
-        placeholder="제목"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <div className="flex items-center gap-2 text-sm">
-        <label className="text-neutral-400">튜닝</label>
-        <select
-          className="rounded bg-neutral-800 px-2 py-1"
-          value={Object.keys(TUNINGS).find((k) => TUNINGS[k].join() === tuning.join()) ?? "Standard"}
-          onChange={(e) => setTuning(TUNINGS[e.target.value])}
-        >
-          {Object.keys(TUNINGS).map((k) => (
-            <option key={k}>{k}</option>
-          ))}
-        </select>
+    <form action={submit} className="space-y-6">
+      <Field label="제목" htmlFor="title">
+        <input
+          id="title"
+          className={`${inputBase} font-serif text-lg`}
+          placeholder="예: BB 박스 벤딩"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </Field>
+
+      <Field label="TAB">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <label htmlFor="tuning" className="text-ink-soft">
+              튜닝
+            </label>
+            <select
+              id="tuning"
+              className="rounded-md border border-rule bg-paper-raised px-2 py-1 text-ink focus:border-accent"
+              value={
+                Object.keys(TUNINGS).find((k) => TUNINGS[k].join() === tuning.join()) ?? "Standard"
+              }
+              onChange={(e) => setTuning(TUNINGS[e.target.value])}
+            >
+              {Object.keys(TUNINGS).map((k) => (
+                <option key={k}>{k}</option>
+              ))}
+            </select>
+          </div>
+          <TabEditor tab={tab} tuning={tuning} onChange={setTab} />
+          <TabView tab={tab} tuning={tuning} />
+        </div>
+      </Field>
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        <Field label="태그" htmlFor="tags" hint="쉼표로 구분">
+          <input
+            id="tags"
+            className={inputBase}
+            placeholder="blues, bb-king"
+            value={tagsText}
+            onChange={(e) => setTagsText(e.target.value)}
+          />
+        </Field>
+        <Field label="출처" htmlFor="source" hint="곡명 / 링크">
+          <input
+            id="source"
+            className={inputBase}
+            placeholder="youtube.com/…"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+          />
+        </Field>
       </div>
-      <TabEditor tab={tab} tuning={tuning} onChange={setTab} />
-      <TabView tab={tab} tuning={tuning} />
-      <input
-        className={input}
-        placeholder="태그 (쉼표로 구분)"
-        value={tagsText}
-        onChange={(e) => setTagsText(e.target.value)}
-      />
-      <input
-        className={input}
-        placeholder="출처 (곡명 / 링크)"
-        value={source}
-        onChange={(e) => setSource(e.target.value)}
-      />
-      <textarea
-        className={input}
-        placeholder="메모"
-        rows={3}
-        value={memo}
-        onChange={(e) => setMemo(e.target.value)}
-      />
-      <button className="rounded bg-amber-500 px-4 py-2 font-medium text-neutral-900">
-        {submitLabel}
-      </button>
+
+      <Field label="메모" htmlFor="memo">
+        <textarea
+          id="memo"
+          className={inputBase}
+          placeholder="어디서 따왔는지, 어떤 느낌인지…"
+          rows={3}
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+        />
+      </Field>
+
+      <div className="flex justify-end border-t border-rule pt-5">
+        <button className={btnPrimary}>{submitLabel}</button>
+      </div>
     </form>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor?: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor={htmlFor}
+        className="flex items-baseline gap-2 text-xs font-medium uppercase tracking-wide text-ink-soft"
+      >
+        {label}
+        {hint && <span className="font-normal normal-case tracking-normal text-ink-faint">{hint}</span>}
+      </label>
+      {children}
+    </div>
   );
 }
