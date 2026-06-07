@@ -1,5 +1,6 @@
 import { signIn } from "@/lib/auth/auth";
 import { btnPrimary, btnGhost, inputBase, WoodshedMark } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -25,7 +26,7 @@ export default async function LoginPage() {
               await signIn("google", { redirectTo: "/" });
             }}
           >
-            <button className={`${btnPrimary} w-full`}>{t.signInGoogle}</button>
+            <SubmitButton className={`${btnPrimary} w-full`}>{t.signInGoogle}</SubmitButton>
           </form>
         </div>
 
@@ -39,7 +40,7 @@ export default async function LoginPage() {
           >
             <p className="text-xs text-ink-faint">Dev-only login (creates a fake account by name)</p>
             <input name="name" placeholder="Dev User" className={inputBase} />
-            <button className={`${btnGhost} w-full justify-center`}>Dev Login</button>
+            <SubmitButton className={`${btnGhost} w-full justify-center`}>Dev Login</SubmitButton>
           </form>
         )}
 

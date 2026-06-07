@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { SubmitButton } from "./SubmitButton";
 
 export function DeleteButton({ action }: { action: (formData: FormData) => void }) {
   const { t } = useI18n();
@@ -21,9 +22,12 @@ export function DeleteButton({ action }: { action: (formData: FormData) => void 
   return (
     <form action={action} className="flex items-center gap-1.5">
       <span className="text-sm text-ink-soft">{t.confirmDelete}</span>
-      <button className="rounded-md bg-danger px-3 py-1.5 text-sm font-medium text-paper-raised hover:bg-danger-ink">
+      <SubmitButton
+        pendingLabel={t.deleting}
+        className="rounded-md bg-danger px-3 py-1.5 text-sm font-medium text-paper-raised hover:bg-danger-ink"
+      >
         {t.del}
-      </button>
+      </SubmitButton>
       <button
         type="button"
         onClick={() => setArmed(false)}

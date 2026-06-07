@@ -4,6 +4,7 @@ import { TabEditor } from "./TabEditor";
 import { TabView } from "./TabView";
 import { TabImport } from "./TabImport";
 import { AudioUpload } from "./AudioUpload";
+import { SubmitButton } from "./SubmitButton";
 import { btnPrimary, inputBase } from "./ui";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { STANDARD_TUNING, type Column } from "@/lib/tab/types";
@@ -63,7 +64,7 @@ export function LickForm({ initial, action, submitLabel }: Props) {
         .filter(Boolean),
     };
     formData.set("payload", JSON.stringify(value));
-    action(formData);
+    return action(formData); // returned so useFormStatus tracks the pending action
   }
 
   function applyImport(r: { tuning: string[]; tab: Column[] }) {
@@ -185,7 +186,9 @@ export function LickForm({ initial, action, submitLabel }: Props) {
       </Field>
 
       <div className="flex justify-end border-t border-rule pt-5">
-        <button className={btnPrimary}>{submitLabel}</button>
+        <SubmitButton className={btnPrimary} pendingLabel={t.saving}>
+          {submitLabel}
+        </SubmitButton>
       </div>
     </form>
   );

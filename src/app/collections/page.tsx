@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import { getLocale } from "@/lib/i18n/locale";
 import { createCollection } from "@/lib/social-actions";
 import { InkLink, btnPrimary, inputBase } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function CollectionsPage() {
   const user = await requireUser();
@@ -37,7 +38,9 @@ export default async function CollectionsPage() {
           <option value="private">{t.visPrivate}</option>
           <option value="public">{t.visPublic}</option>
         </select>
-        <button className={btnPrimary}>{t.createCollection}</button>
+        <SubmitButton className={btnPrimary} pendingLabel={t.saving}>
+          {t.createCollection}
+        </SubmitButton>
       </form>
 
       {collections.length === 0 ? (

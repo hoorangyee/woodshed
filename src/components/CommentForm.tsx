@@ -2,6 +2,7 @@
 import { useRef } from "react";
 import { addComment } from "@/lib/social-actions";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { SubmitButton } from "./SubmitButton";
 import { btnPrimary, inputBase } from "./ui";
 
 export function CommentForm({ lickId }: { lickId: string }) {
@@ -27,7 +28,9 @@ export function CommentForm({ lickId }: { lickId: string }) {
         className={inputBase}
       />
       <div className="flex justify-end">
-        <button className={btnPrimary}>{t.postComment}</button>
+        <SubmitButton className={btnPrimary} pendingLabel={t.posting}>
+          {t.postComment}
+        </SubmitButton>
       </div>
     </form>
   );
