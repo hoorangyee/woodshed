@@ -14,6 +14,17 @@ A community where guitarists write down **licks** (short phrases), store them as
 - **Trust & safety** — reporting, an admin moderation queue (hide/resolve/dismiss), comment rate limiting.
 - **Localized** — English and Korean (cookie‑based, default English).
 
+## Screenshots
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/lick-detail.png" alt="Lick page showing the sheet-music staff, audio player, memo, and comments" /> | <img src="docs/screenshots/editor.png" alt="Graphic TAB editor with the 6-string fret grid, articulations, and live staff preview" /> |
+| **Lick page** — sheet‑music staff, audio, memo & comments | **Graphic TAB editor** — fret grid, articulations, live staff preview |
+| <img src="docs/screenshots/home.png" alt="Home page listing your collected licks with search and tag filters" /> | <img src="docs/screenshots/explore.png" alt="Explore feed of public licks with search, tag filters, and sorting" /> |
+| **Your licks** — personal library with search & tag filters | **Explore** — public feed, sort by recent · most liked · most discussed |
+| <img src="docs/screenshots/profile.png" alt="Public profile page listing a user's licks and collections" /> | <img src="docs/screenshots/admin.png" alt="Admin moderation queue with hide, resolve, and dismiss actions" /> |
+| **Public profile** — licks & collections at `/u/[handle]` | **Moderation queue** — hide · resolve · dismiss reports |
+
 ## Tech stack
 
 - Next.js (App Router) + React + TypeScript
