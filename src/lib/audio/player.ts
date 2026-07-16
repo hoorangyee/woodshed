@@ -89,8 +89,15 @@ export function playLick(schedule: Schedule): PlaybackHandle {
   const master = ac.createGain();
   master.gain.value = MASTER_GAIN;
   const limiter = ac.createDynamicsCompressor();
+  limiter.threshold.value = -6;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
   master.connect(limiter);
   limiter.connect(ac.destination);
+  const teardown = () => {
+    master.disconnect();
+    limiter.disconnect();
+  };
   const startTime = ac.currentTime + START_DELAY;
   for (const ev of schedule.events) {
     scheduleNote(ac, master, ev, startTime, schedule.columnDuration);
@@ -104,16 +111,10 @@ export function playLick(schedule: Schedule): PlaybackHandle {
       const now = ac.currentTime;
       master.gain.setValueAtTime(master.gain.value, now);
       master.gain.linearRampToValueAtTime(0, now + 0.03);
-      window.setTimeout(() => {
-        master.disconnect();
-        limiter.disconnect();
-      }, 50);
+      window.setTimeout(teardown, 50);
     },
     release() {
-      window.setTimeout(() => {
-        master.disconnect();
-        limiter.disconnect();
-      }, PLUCK_SECONDS * 1000);
+      window.setTimeout(teardown, PLUCK_SECONDS * 1000);
     },
   };
 }
