@@ -12,6 +12,8 @@ interface Props {
   /** Container/chip background (must match so the staff line hides behind chips) */
   surface?: string;
   compact?: boolean;
+  /** Column to highlight during playback (playhead) */
+  activeColumn?: number | null;
 }
 
 /** Polygon points for an upward arrowhead */
@@ -39,7 +41,13 @@ function wavyPath(cx: number, y: number, width: number, amp: number, wl: number)
  * slides are diagonals, bends are curved arrows (full / ½), vibrato is a wavy line,
  * and hammer-ons/pull-offs are slur arcs (H / P) connecting the two notes.
  */
-export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = false }: Props) {
+export function TabStaff({
+  tab,
+  tuning,
+  surface = "bg-paper-raised",
+  compact = false,
+  activeColumn = null,
+}: Props) {
   const cols = tab.length > 0 ? tab : [{ notes: [] }];
 
   // Coordinate-system constants
@@ -183,6 +191,18 @@ export function TabStaff({ tab, tuning, surface = "bg-paper-raised", compact = f
           aria-hidden="true"
           style={{ overflow: "visible" }}
         >
+          {/* Playhead highlight */}
+          {activeColumn != null && activeColumn >= 0 && activeColumn < cols.length && (
+            <rect
+              x={activeColumn * COL_W}
+              y={HEAD - 4}
+              width={COL_W}
+              height={staffH + 8}
+              rx={6}
+              fill="var(--color-accent)"
+              opacity={0.12}
+            />
+          )}
           {/* String lines */}
           {ROWS.map((s) => (
             <line
