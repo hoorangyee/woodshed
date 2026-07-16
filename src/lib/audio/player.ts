@@ -97,7 +97,10 @@ export function playLick(schedule: Schedule): PlaybackHandle {
     totalDuration: schedule.totalDuration,
     currentTime: () => ac.currentTime,
     stop() {
-      master.disconnect();
+      const now = ac.currentTime;
+      master.gain.setValueAtTime(master.gain.value, now);
+      master.gain.linearRampToValueAtTime(0, now + 0.03);
+      window.setTimeout(() => master.disconnect(), 50);
     },
   };
 }
