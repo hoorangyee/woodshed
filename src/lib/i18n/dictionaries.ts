@@ -138,6 +138,11 @@ const en = {
   copy: "Copy",
   copied: "Copied ✓",
   copyAria: "Copy TAB as ASCII",
+  play: "Play",
+  stop: "Stop",
+  playAria: "Play lick",
+  stopAria: "Stop playback",
+  bpmAria: "Tempo (BPM)",
 
   articulations: "Articulations",
   articToggleHint: "Toggle with the buttons",
@@ -295,6 +300,11 @@ const ko: Dict = {
   copy: "복사",
   copied: "복사됨 ✓",
   copyAria: "TAB을 ASCII로 복사",
+  play: "재생",
+  stop: "정지",
+  playAria: "Lick 재생",
+  stopAria: "재생 정지",
+  bpmAria: "템포 (BPM)",
 
   articulations: "주법",
   articToggleHint: "버튼으로 켜고 끄기",
