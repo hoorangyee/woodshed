@@ -1,4 +1,4 @@
-import type { Articulation, Column, Note } from "./types";
+import { MAX_FRET, type Articulation, type Column, type Note } from "./types";
 
 export function addColumn(cols: Column[]): Column[] {
   return [...cols, { notes: [] }];
@@ -97,4 +97,24 @@ export function cycleBend(cols: Column[], colIndex: number, string: number): Col
       notes: col.notes.map((n) => (n.string === string ? { ...n, artic: next(n.artic) } : n)),
     };
   });
+}
+
+/**
+ * Shift every note's fret by `semitones` (same string). All-or-nothing:
+ * returns null when any resulting fret would leave 0..MAX_FRET, so a +1
+ * followed by −1 always restores the original tab (no clamping). Whiskey
+ * and empty columns pass through unchanged.
+ */
+export function transpose(cols: Column[], semitones: number): Column[] | null {
+  const out: Column[] = [];
+  for (const col of cols) {
+    const notes: Note[] = [];
+    for (const n of col.notes) {
+      const fret = n.fret + semitones;
+      if (fret < 0 || fret > MAX_FRET) return null;
+      notes.push({ ...n, fret });
+    }
+    out.push({ ...col, notes });
+  }
+  return out;
 }

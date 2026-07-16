@@ -9,6 +9,7 @@ import {
   clearNote,
   toggleArtic,
   cycleBend,
+  transpose,
 } from "./editor-ops";
 import type { Column } from "./types";
 
@@ -123,5 +124,53 @@ describe("cycleBend", () => {
     let cols = setNote(base, 0, { string: 2, fret: 5, artic: "/" });
     cols = cycleBend(cols, 0, 2);
     expect(cols[0].notes[0].artic).toBe("b");
+  });
+});
+
+describe("transpose", () => {
+  const tab: Column[] = [
+    {
+      notes: [
+        { string: 0, fret: 5, artic: "b" },
+        { string: 1, fret: 7 },
+      ],
+    },
+    { notes: [], whiskey: true },
+    { notes: [{ string: 2, fret: 0 }] },
+  ];
+
+  it("shifts every fret by the given semitones", () => {
+    const up = transpose(tab, 2)!;
+    expect(up[0].notes.map((n) => n.fret)).toEqual([7, 9]);
+    expect(up[2].notes[0].fret).toBe(2);
+  });
+
+  it("preserves articulations and whiskey columns", () => {
+    const up = transpose(tab, 2)!;
+    expect(up[0].notes[0].artic).toBe("b");
+    expect(up[1].whiskey).toBe(true);
+  });
+
+  it("returns null when a note would drop below fret 0", () => {
+    expect(transpose(tab, -1)).toBeNull(); // column 3 sits on fret 0
+  });
+
+  it("returns null when a note would pass MAX_FRET", () => {
+    const high: Column[] = [{ notes: [{ string: 0, fret: 24 }] }];
+    expect(transpose(high, 1)).toBeNull();
+  });
+
+  it("round-trips: +1 then −1 restores the original", () => {
+    const once = transpose(tab, 1)!;
+    expect(transpose(once, -1)).toEqual(tab);
+  });
+
+  it("transposes a tab with no notes to itself", () => {
+    expect(transpose([{ notes: [] }], 3)).toEqual([{ notes: [] }]);
+  });
+
+  it("does not mutate the input", () => {
+    transpose(tab, 2);
+    expect(tab[0].notes[0].fret).toBe(5);
   });
 });

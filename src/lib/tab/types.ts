@@ -29,3 +29,4 @@ export interface Lick {
 
 export const STANDARD_TUNING: string[] = ["E", "A", "D", "G", "B", "e"];
 export const STRING_COUNT = 6;
+export const MAX_FRET = 24;
