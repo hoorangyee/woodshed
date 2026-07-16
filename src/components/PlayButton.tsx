@@ -43,6 +43,9 @@ export function PlayButton({ tab, tuning, onActiveColumn }: Props) {
   const stopRef = useRef(stopPlayback);
   // eslint-disable-next-line react-hooks/refs
   stopRef.current = stopPlayback;
+  const onActiveColumnRef = useRef(onActiveColumn);
+  // eslint-disable-next-line react-hooks/refs -- keep the rAF loop reading the latest callback
+  onActiveColumnRef.current = onActiveColumn;
   useEffect(() => () => stopRef.current(), []);
 
   const start = () => {
@@ -58,7 +61,7 @@ export function PlayButton({ tab, tuning, onActiveColumn }: Props) {
         stopRef.current();
         return;
       }
-      onActiveColumn?.(elapsed < 0 ? null : Math.floor(elapsed / h.columnDuration));
+      onActiveColumnRef.current?.(elapsed < 0 ? null : Math.floor(elapsed / h.columnDuration));
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
