@@ -89,3 +89,30 @@ describe("TabEditor", () => {
     expect(cell).toHaveTextContent("9");
   });
 });
+
+describe("transpose buttons", () => {
+  it("shifts a note up a semitone through onChange", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    const cell = screen.getByRole("button", { name: "string-2-col-0" });
+    await user.click(cell);
+    await user.keyboard("7");
+    await user.click(screen.getByRole("button", { name: "Transpose up a semitone" }));
+    expect(cell).toHaveTextContent("8");
+  });
+
+  it("disables both buttons when the tab has no notes", () => {
+    render(<TabEditor tab={[{ notes: [] }]} tuning={STANDARD_TUNING} onChange={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "Transpose up a semitone" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Transpose down a semitone" })).toBeDisabled();
+  });
+
+  it("disables − when a note sits on fret 0, keeps + enabled", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "string-2-col-0" }));
+    await user.keyboard("0");
+    expect(screen.getByRole("button", { name: "Transpose down a semitone" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Transpose up a semitone" })).toBeEnabled();
+  });
+});

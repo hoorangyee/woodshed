@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { STRING_COUNT, TOGGLE_KEYS, type Column, type Note, type Articulation } from "@/lib/tab/types";
-import { addColumn, removeColumn, insertWhiskey, moveColumn, moveNote, setNote, clearNote, toggleArtic, cycleBend } from "@/lib/tab/editor-ops";
+import { addColumn, removeColumn, insertWhiskey, moveColumn, moveNote, setNote, clearNote, toggleArtic, cycleBend, transpose } from "@/lib/tab/editor-ops";
 import { cellToken } from "@/lib/tab/serialize";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Dict } from "@/lib/i18n/dictionaries";
@@ -244,6 +244,15 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
     focusInput();
   }
 
+  // KEY stepper: transpose the whole tab by ±1 semitone (all-or-nothing)
+  const hasNotes = tab.some((c) => c.notes.length > 0);
+  const canTransposeUp = hasNotes && transpose(tab, 1) !== null;
+  const canTransposeDown = hasNotes && transpose(tab, -1) !== null;
+  function applyTranspose(semitones: number) {
+    const next = transpose(tab, semitones);
+    if (next) onChange(next);
+  }
+
   return (
     <div className="space-y-3">
       {/* Hidden input to summon the OS numeric keypad (fontSize 16 → prevents iOS zoom) */}
@@ -432,12 +441,37 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
 
       {/* Articulation toolbar */}
       <div className="rounded-lg border border-rule bg-paper-raised p-2">
-        <div className="mb-1.5 flex items-center gap-2 px-1">
+        <div className="mb-1.5 flex flex-wrap items-center gap-2 px-1">
           <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">
             {t.articulations}
           </span>
           <span className="text-xs text-ink-faint">
             {activeNote ? t.articToggleHint : t.selectNoteHint}
+          </span>
+          <span className="ml-auto flex items-center gap-1.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-ink-soft">
+              {t.keyLabel}
+            </span>
+            <button
+              type="button"
+              aria-label={t.transposeDownAria}
+              title={t.transposeDownAria}
+              disabled={!canTransposeDown}
+              onClick={() => applyTranspose(-1)}
+              className="flex h-6 w-6 items-center justify-center rounded-md border border-rule bg-paper-raised font-mono text-sm text-ink-soft transition-colors hover:border-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              aria-label={t.transposeUpAria}
+              title={t.transposeUpAria}
+              disabled={!canTransposeUp}
+              onClick={() => applyTranspose(1)}
+              className="flex h-6 w-6 items-center justify-center rounded-md border border-rule bg-paper-raised font-mono text-sm text-ink-soft transition-colors hover:border-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              +
+            </button>
           </span>
         </div>
         <div className="flex flex-wrap gap-1.5">

@@ -143,6 +143,9 @@ const en = {
   playAria: "Play lick",
   stopAria: "Stop playback",
   bpmAria: "Tempo (BPM)",
+  keyLabel: "Key",
+  transposeUpAria: "Transpose up a semitone",
+  transposeDownAria: "Transpose down a semitone",
 
   articulations: "Articulations",
   articToggleHint: "Toggle with the buttons",
@@ -305,6 +308,9 @@ const ko: Dict = {
   playAria: "Lick 재생",
   stopAria: "재생 정지",
   bpmAria: "템포 (BPM)",
+  keyLabel: "키",
+  transposeUpAria: "반음 올리기",
+  transposeDownAria: "반음 내리기",
 
   articulations: "주법",
   articToggleHint: "버튼으로 켜고 끄기",
