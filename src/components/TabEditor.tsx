@@ -250,7 +250,10 @@ export function TabEditor({ tab, tuning, onChange }: Props) {
   const canTransposeDown = hasNotes && transpose(tab, -1) !== null;
   function applyTranspose(semitones: number) {
     const next = transpose(tab, semitones);
-    if (next) onChange(next);
+    if (next) {
+      onChange(next);
+      setBuffer("");
+    }
   }
 
   return (

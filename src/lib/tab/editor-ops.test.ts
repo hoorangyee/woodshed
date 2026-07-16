@@ -160,6 +160,11 @@ describe("transpose", () => {
     expect(transpose(high, 1)).toBeNull();
   });
 
+  it("allows landing exactly on MAX_FRET", () => {
+    const high: Column[] = [{ notes: [{ string: 0, fret: 23 }] }];
+    expect(transpose(high, 1)![0].notes[0].fret).toBe(24);
+  });
+
   it("round-trips: +1 then −1 restores the original", () => {
     const once = transpose(tab, 1)!;
     expect(transpose(once, -1)).toEqual(tab);
