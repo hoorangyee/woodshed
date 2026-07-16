@@ -22,6 +22,7 @@ describe("PlayButton", () => {
     playMock.mockReset();
     playMock.mockReturnValue({
       stop: stopMock,
+      release: vi.fn(),
       startTime: 0,
       columnDuration: 1 / 3,
       totalDuration: 1 / 3,
@@ -52,5 +53,19 @@ describe("PlayButton", () => {
       <PlayButton tab={[{ notes: [] }, { notes: [], whiskey: true }]} tuning={STANDARD_TUNING} />,
     );
     expect(await screen.findByRole("button", { name: "Play lick" })).toBeDisabled();
+  });
+
+  it("keeps reporting through the latest onActiveColumn after a rerender", async () => {
+    const user = userEvent.setup();
+    const first = vi.fn();
+    const second = vi.fn();
+    const { rerender } = render(
+      <PlayButton tab={TAB} tuning={STANDARD_TUNING} onActiveColumn={first} />,
+    );
+    await user.click(await screen.findByRole("button", { name: "Play lick" }));
+    rerender(<PlayButton tab={TAB} tuning={STANDARD_TUNING} onActiveColumn={second} />);
+    first.mockClear();
+    await vi.waitFor(() => expect(second).toHaveBeenCalledWith(0));
+    expect(first).not.toHaveBeenCalled();
   });
 });

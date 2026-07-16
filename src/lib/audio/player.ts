@@ -2,6 +2,8 @@ import type { NoteEvent, Schedule } from "./schedule";
 
 export interface PlaybackHandle {
   stop(): void;
+  /** Lets tails ring, then disconnects. */
+  release(): void;
   startTime: number;
   columnDuration: number;
   totalDuration: number;
@@ -86,7 +88,9 @@ export function playLick(schedule: Schedule): PlaybackHandle {
   const ac = getContext();
   const master = ac.createGain();
   master.gain.value = MASTER_GAIN;
-  master.connect(ac.destination);
+  const limiter = ac.createDynamicsCompressor();
+  master.connect(limiter);
+  limiter.connect(ac.destination);
   const startTime = ac.currentTime + START_DELAY;
   for (const ev of schedule.events) {
     scheduleNote(ac, master, ev, startTime, schedule.columnDuration);
@@ -100,7 +104,16 @@ export function playLick(schedule: Schedule): PlaybackHandle {
       const now = ac.currentTime;
       master.gain.setValueAtTime(master.gain.value, now);
       master.gain.linearRampToValueAtTime(0, now + 0.03);
-      window.setTimeout(() => master.disconnect(), 50);
+      window.setTimeout(() => {
+        master.disconnect();
+        limiter.disconnect();
+      }, 50);
+    },
+    release() {
+      window.setTimeout(() => {
+        master.disconnect();
+        limiter.disconnect();
+      }, PLUCK_SECONDS * 1000);
     },
   };
 }

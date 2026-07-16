@@ -31,22 +31,27 @@ export function PlayButton({ tab, tuning, onActiveColumn }: Props) {
     setSupported(isAudioSupported());
   }, []);
 
-  const stopPlayback = () => {
-    handleRef.current?.stop();
+  const finishPlayback = (mode: "stop" | "release") => {
+    const h = handleRef.current;
+    if (h) {
+      if (mode === "stop") h.stop();
+      else h.release();
+    }
     handleRef.current = null;
     cancelAnimationFrame(rafRef.current);
     setPlaying(false);
     onActiveColumn?.(null);
   };
+  const stopPlayback = () => finishPlayback("stop");
   // Latest-ref: keeps the unmount cleanup below calling the current closure
   // (with up-to-date onActiveColumn/tab/tuning) instead of a stale one from mount.
-  const stopRef = useRef(stopPlayback);
-  // eslint-disable-next-line react-hooks/refs
-  stopRef.current = stopPlayback;
+  const finishRef = useRef(finishPlayback);
+  // eslint-disable-next-line react-hooks/refs -- keep unmount cleanup and the rAF loop reading the latest closure
+  finishRef.current = finishPlayback;
   const onActiveColumnRef = useRef(onActiveColumn);
   // eslint-disable-next-line react-hooks/refs -- keep the rAF loop reading the latest callback
   onActiveColumnRef.current = onActiveColumn;
-  useEffect(() => () => stopRef.current(), []);
+  useEffect(() => () => finishRef.current("stop"), []);
 
   const start = () => {
     const schedule = buildSchedule(tab, tuning, bpm);
@@ -58,7 +63,7 @@ export function PlayButton({ tab, tuning, onActiveColumn }: Props) {
       if (!h) return;
       const elapsed = h.currentTime() - h.startTime;
       if (elapsed >= h.totalDuration) {
-        stopRef.current();
+        finishRef.current("release");
         return;
       }
       onActiveColumnRef.current?.(elapsed < 0 ? null : Math.floor(elapsed / h.columnDuration));
@@ -87,7 +92,7 @@ export function PlayButton({ tab, tuning, onActiveColumn }: Props) {
       </label>
       <button
         type="button"
-        disabled={!hasNotes}
+        disabled={!playing && !hasNotes}
         aria-label={playing ? t.stopAria : t.playAria}
         onClick={playing ? stopPlayback : start}
         className="rounded-md border border-rule bg-paper-raised px-2.5 py-1 text-xs text-ink-soft shadow-sm transition-colors hover:border-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"

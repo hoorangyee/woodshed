@@ -50,8 +50,8 @@ src/components/TabStaff.tsx    renders playhead highlight for activeColumn
 - `tuningToMidi(tuning: string[]): number[]` — tunings are stored as note names
   without octaves (e.g. `["E","A","D","G","B","e"]`). Octaves are assigned by
   convention: string 0 (lowest) is anchored in octave 2 (MIDI 36–47); each
-  subsequent string gets the lowest MIDI note of its pitch class that is ≥ the
-  previous string's note. This yields E2 A2 D3 G3 B3 E4 for Standard and
+  subsequent string gets the lowest MIDI note of its pitch class that is
+  strictly above the previous string's note. This yields E2 A2 D3 G3 B3 E4 for Standard and
   D2 A2 D3 G3 B3 E4 for Drop D without any per-tuning tables.
 - `midiToFreq(midi: number): number` — A4 = 440 Hz, `440 * 2^((m-69)/12)`.
 - Note pitch = open-string MIDI + fret.
