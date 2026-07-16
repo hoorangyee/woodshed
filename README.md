@@ -7,6 +7,7 @@ A community where guitarists write down **licks** (short phrases), store them as
 ## Features
 
 - **Graphic TAB editor** — click frets on a 6‑string grid; articulations (hammer‑on/pull‑off, slides, full/half bends, vibrato) rendered as a real sheet‑music staff. Live ASCII preview + copy. Works on mobile via the native numeric keypad.
+- **Playback** — hear any lick right in the browser: Karplus‑Strong plucked‑string synthesis (Web Audio, no samples), adjustable tempo, bends/slides/vibrato rendered as pitch effects, with a moving playhead on the staff.
 - **Accounts** — Google OAuth, unique handles, public profiles at `/u/[handle]`.
 - **Ownership & visibility** — every lick is private, unlisted (link‑only), or public; only the owner can edit.
 - **Discovery** — public `Explore` feed with keyword/tag search and sorting (recent · most liked · most discussed).
